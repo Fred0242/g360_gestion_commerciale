@@ -1,0 +1,2289 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+      integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <title>G-360 Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      /* RESET et BASE */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --navy: #0d1b2a;
+        --dark: #1b263b;
+        --mid: #415a77;
+        --accent: #00b4d8;
+        --success: #2dc653;
+        --warning: #f4a261;
+        --danger: #e63946;
+        --bg: #f0f4f8;
+        --card: #ffffff;
+        --text: #1b263b;
+        --muted: #778da9;
+        --border: #dde3ea;
+      }
+
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      /* LOGIN PAGE */
+
+      #loginPage {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #0d1b2a 0%, #415a77 100%);
+      }
+
+      .login-box {
+        background: white;
+        border-radius: 20px;
+        padding: 48px 40px;
+        width: 380px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        text-align: center;
+      }
+
+      .login-logo {
+        font-size: 2.4rem;
+        font-weight: 800;
+        color: var(--navy);
+        letter-spacing: -1px;
+        margin-bottom: 4px;
+      }
+
+      .login-logo span {
+        color: var(--accent);
+      }
+
+      .login-sub {
+        color: var(--muted);
+        font-size: 0.85rem;
+        margin-bottom: 32px;
+      }
+
+      .login-lang {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin-bottom: 24px;
+      }
+
+      .lang-btn {
+        padding: 6px 18px;
+        border: 2px solid var(--border);
+        border-radius: 20px;
+        background: white;
+        color: var(--muted);
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .lang-btn.active {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: #e8f9fd;
+      }
+
+      .form-group {
+        text-align: left;
+        margin-bottom: 16px;
+      }
+
+      .form-group label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--muted);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+
+      .form-group input:focus {
+        border-color: var(--accent);
+      }
+
+      .btn-login {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, var(--dark), var(--mid));
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s;
+        margin-top: 8px;
+      }
+
+      .btn-login:hover {
+        opacity: 0.9;
+      }
+
+      .login-error {
+        color: var(--danger);
+        font-size: 0.85rem;
+        margin-top: 10px;
+        min-height: 20px;
+      }
+
+      /* APP LAYOUT */
+
+      #app {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* SIDEBAR */
+      .sidebar {
+        width: 220px;
+        background: var(--navy);
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 100;
+        transition: width 0.3s;
+      }
+
+      .sidebar-logo {
+        padding: 28px 20px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .sidebar-logo .logo-name {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: white;
+        letter-spacing: -0.5px;
+      }
+
+      .sidebar-logo .logo-name span {
+        color: var(--accent);
+      }
+
+      .sidebar-logo .logo-sub {
+        font-size: 0.7rem;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+
+      .nav-section {
+        padding: 16px 12px 8px;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.3);
+        font-weight: 600;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 20px;
+        color: rgba(255, 255, 255, 0.6);
+        cursor: pointer;
+        border-radius: 8px;
+        margin: 2px 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        border: none;
+        background: none;
+        width: calc(100% - 16px);
+        text-align: left;
+      }
+
+      .nav-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: white;
+      }
+
+      .nav-item.active {
+        background: linear-gradient(135deg, var(--accent), #0077b6);
+        color: white;
+      }
+
+      .nav-item .icon {
+        font-size: 1.1rem;
+        width: 22px;
+        text-align: center;
+      }
+
+      .nav-item .badge {
+        margin-left: auto;
+        background: var(--danger);
+        color: white;
+        border-radius: 10px;
+        padding: 2px 7px;
+        font-size: 0.7rem;
+        font-weight: 700;
+      }
+
+      .sidebar-footer {
+        margin-top: auto;
+        padding: 16px 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .sidebar-lang {
+        display: flex;
+        gap: 6px;
+        padding: 0 12px;
+        margin-bottom: 8px;
+      }
+
+      .sidebar-lang button {
+        flex: 1;
+        padding: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .sidebar-lang button.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+      }
+
+      .btn-logout {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 20px;
+        color: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        border-radius: 8px;
+        margin: 2px 8px;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+        border: none;
+        background: none;
+        width: calc(100% - 16px);
+      }
+
+      .btn-logout:hover {
+        background: rgba(231, 57, 70, 0.15);
+        color: var(--danger);
+      }
+
+      /* MAIN CONTENT */
+      .main {
+        margin-left: 220px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      .topbar {
+        background: white;
+        padding: 16px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+      }
+
+      .topbar-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--navy);
+      }
+
+      .topbar-date {
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      .content {
+        padding: 28px;
+      }
+
+      /* ═══════════════════════════════════════════
+   CARDS & GRIDS
+═══════════════════════════════════════════ */
+      .card {
+        background: var(--card);
+        border-radius: 14px;
+        padding: 24px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        border: 1px solid var(--border);
+      }
+
+      .grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 24px;
+      }
+
+      .stat-card {
+        background: var(--card);
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .stat-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+      }
+
+      .stat-icon.blue {
+        background: #e0f4fb;
+      }
+      .stat-icon.green {
+        background: #e6f9ee;
+      }
+      .stat-icon.orange {
+        background: #fff0e4;
+      }
+      .stat-icon.red {
+        background: #fde8ea;
+      }
+
+      .stat-info .stat-val {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--navy);
+        line-height: 1;
+      }
+
+      .stat-info .stat-label {
+        font-size: 0.78rem;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+
+      /* ═══════════════════════════════════════════
+   SECTION TITLES
+═══════════════════════════════════════════ */
+      .section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--navy);
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .section-title::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+
+      /* ═══════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════ */
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--dark), var(--mid));
+        color: white;
+      }
+      .btn-primary:hover {
+        opacity: 0.88;
+      }
+      .btn-success {
+        background: var(--success);
+        color: white;
+      }
+      .btn-danger {
+        background: var(--danger);
+        color: white;
+      }
+      .btn-warning {
+        background: var(--warning);
+        color: white;
+      }
+      .btn-outline {
+        background: white;
+        color: var(--mid);
+        border: 2px solid var(--border);
+      }
+      .btn-outline:hover {
+        border-color: var(--mid);
+      }
+      .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.78rem;
+      }
+
+      /* ═══════════════════════════════════════════
+   FORM ELEMENTS
+═══════════════════════════════════════════ */
+      .form-row {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .field label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+
+      select,
+      input[type="number"],
+      input[type="text"] {
+        padding: 10px 14px;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        outline: none;
+        transition: border-color 0.2s;
+        background: white;
+        color: var(--text);
+      }
+
+      select:focus,
+      input:focus {
+        border-color: var(--accent);
+      }
+
+      /* ═══════════════════════════════════════════
+   TABLE
+═══════════════════════════════════════════ */
+      .table-wrap {
+        overflow-x: auto;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+      }
+
+      thead tr {
+        background: #f8fafc;
+      }
+      thead th {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--muted);
+        border-bottom: 1px solid var(--border);
+      }
+
+      tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background 0.15s;
+      }
+      tbody tr:last-child {
+        border-bottom: none;
+      }
+      tbody tr:hover {
+        background: #f8fafc;
+      }
+      tbody td {
+        padding: 12px 16px;
+      }
+
+      .badge-pill {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 700;
+      }
+
+      .badge-success {
+        background: #e6f9ee;
+        color: #2dc653;
+      }
+      .badge-danger {
+        background: #fde8ea;
+        color: var(--danger);
+      }
+      .badge-warning {
+        background: #fff0e4;
+        color: var(--warning);
+      }
+
+      /* ═══════════════════════════════════════════
+   STOCK LIST
+═══════════════════════════════════════════ */
+      .stock-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        margin-bottom: 10px;
+        background: white;
+        transition: box-shadow 0.2s;
+      }
+
+      .stock-item:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      .stock-item-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .stock-item-name {
+        font-weight: 600;
+        font-size: 0.92rem;
+        text-transform: capitalize;
+      }
+      .stock-item-prix {
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+
+      .stock-bar-wrap {
+        flex: 1;
+        margin: 0 16px;
+      }
+      .stock-bar-bg {
+        background: #eef2f7;
+        border-radius: 99px;
+        height: 8px;
+        overflow: hidden;
+      }
+      .stock-bar-fill {
+        height: 100%;
+        border-radius: 99px;
+        transition: width 0.4s;
+      }
+      .stock-bar-fill.ok {
+        background: var(--success);
+      }
+      .stock-bar-fill.warning {
+        background: var(--warning);
+      }
+      .stock-bar-fill.danger {
+        background: var(--danger);
+      }
+
+      .stock-qty {
+        font-weight: 700;
+        font-size: 1rem;
+        min-width: 36px;
+        text-align: right;
+      }
+
+      .stock-actions {
+        display: flex;
+        gap: 6px;
+        margin-left: 12px;
+      }
+
+      /* ═══════════════════════════════════════════
+   ALERTS
+═══════════════════════════════════════════ */
+      #alertZone {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-width: 320px;
+      }
+
+      .alert-toast {
+        background: white;
+        border-radius: 12px;
+        padding: 14px 18px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        border-left: 4px solid var(--warning);
+        animation: slideIn 0.3s ease;
+      }
+
+      .alert-toast.success {
+        border-left-color: var(--success);
+      }
+      .alert-toast.danger {
+        border-left-color: var(--danger);
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(120%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      .alert-icon {
+        font-size: 1.3rem;
+      }
+      .alert-body {
+        flex: 1;
+      }
+      .alert-title {
+        font-weight: 700;
+        font-size: 0.85rem;
+        margin-bottom: 2px;
+      }
+      .alert-msg {
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+      .alert-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 1rem;
+        padding: 0;
+      }
+
+      /* ═══════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════ */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-box {
+        background: white;
+        border-radius: 16px;
+        padding: 32px;
+        width: 420px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+      }
+
+      .modal-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 24px;
+      }
+
+      /* ═══════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════ */
+      .tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid var(--border);
+      }
+
+      .tab-btn {
+        padding: 10px 20px;
+        border: none;
+        background: none;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--muted);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.2s;
+      }
+
+      .tab-btn.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+      }
+
+      .tab-pane {
+        display: none;
+      }
+      .tab-pane.active {
+        display: block;
+      }
+
+      /* ═══════════════════════════════════════════
+   HISTORY SECTION
+═══════════════════════════════════════════ */
+      .history-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 24px;
+      }
+
+      /* ═══════════════════════════════════════════
+   ADD PRODUCT FORM
+═══════════════════════════════════════════ */
+      .add-product-form {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px dashed var(--border);
+        margin-bottom: 20px;
+      }
+
+      /* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+      @media (max-width: 900px) {
+        .grid-4 {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .grid-2 {
+          grid-template-columns: 1fr;
+        }
+        .sidebar {
+          width: 64px;
+        }
+        .sidebar .logo-name,
+        .sidebar .logo-sub,
+        .sidebar .nav-item span,
+        .sidebar .nav-section,
+        .sidebar-lang,
+        .btn-logout span {
+          display: none;
+        }
+        .main {
+          margin-left: 64px;
+        }
+        .nav-item {
+          justify-content: center;
+          padding: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Zone d'alerte-->
+    <div id="alertZone"></div>
+
+    <!-- LOGIN PAGE -->
+    <div id="loginPage">
+      <div class="login-box">
+        <div class="login-logo">G<span>-</span>360</div>
+        <div class="login-sub" data-key="loginSub">Gestion Commerciale PME</div>
+        <div class="login-lang">
+          <button class="lang-btn active" onclick="setLang('fr', this)">
+            <img src="./favicon-16x16_france.png" alt="" srcset=""> Français
+          </button>
+          <button class="lang-btn" onclick="setLang('wo', this)">
+            <img src="./favicon-16x16_senegal.png" alt="" srcset=""> Wolof
+          </button>
+        </div>
+        <div class="form-group">
+          <label data-key="userLabel">Utilisateur</label>
+          <input id="loginUser" type="text" placeholder="" />
+        </div>
+        <div class="form-group">
+          <label data-key="passLabel">Mot de passe</label>
+          <input
+            id="loginPass"
+            type="password"
+            placeholder=""
+            onkeydown="if (event.key === 'Enter') doLogin();"
+          />
+        </div>
+        <button class="btn-login" onclick="doLogin()" data-key="loginBtn">
+          Connexion
+        </button>
+        <div class="login-error" id="loginErr"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════ APP ═══════════ -->
+    <div id="app" class="hidden">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-logo">
+          <div class="logo-name">
+            G<span style="color: var(--accent)">-</span>360
+          </div>
+          <div class="logo-sub">Gestion PME</div>
+        </div>
+
+        <div class="nav-section">Menu</div>
+        <button
+          class="nav-item active"
+          onclick="show('dashboard', this)"
+          data-key="dashboard"
+        >
+          <span class="icon">📊</span
+          ><span data-key="dashboard">Dashboard</span>
+        </button>
+        <button
+          class="nav-item"
+          onclick="show('sales', this)"
+          data-key="salesNav"
+        >
+          <span class="icon">🛒</span><span data-key="salesNav">Vente</span>
+        </button>
+        <button
+          class="nav-item"
+          onclick="show('stock', this)"
+          data-key="stockNav"
+        >
+          <span class="icon">📦</span><span data-key="stockNav">Stock</span>
+          <span class="badge hidden" id="stockBadge">0</span>
+        </button>
+        <button
+          class="nav-item"
+          onclick="show('history', this)"
+          data-key="historyNav"
+        >
+          <span class="icon">📋</span
+          ><span data-key="historyNav">Historique</span>
+        </button>
+
+        <div class="nav-section">Gestion</div>
+        <button class="nav-item" onclick="show('products', this)">
+          <span class="icon">🏷️</span><span>Produits</span>
+        </button>
+        <button
+          class="nav-item"
+          onclick="show('support', this)"
+          data-key="supportNav"
+        >
+          <span class="icon">💬</span><span data-key="supportNav">Support</span>
+        </button>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-lang">
+            <button class="active" id="btnFR" onclick="setLang('fr', this)">
+              <img src="./favicon-16x16_france.png" alt="" srcset="">FR
+            </button>
+            <button id="btnWO" onclick="setLang('wo', this)"><img src="./favicon-16x16_senegal.png" alt="" srcset="">WO</button>
+          </div>
+          <button class="btn-logout" onclick="doLogout()">
+            <span>🚪</span><span>Déconnexion</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- MAIN -->
+      <main class="main">
+        <div class="topbar">
+          <div class="topbar-title" id="pageTitle">Dashboard</div>
+          <div class="topbar-date" id="topDate"></div>
+        </div>
+
+        <div class="content">
+          <!-- ── DASHBOARD ── -->
+          <section id="sec-dashboard">
+            <div class="grid-4">
+              <div class="stat-card">
+                <div class="stat-icon blue">💰</div>
+                <div class="stat-info">
+                  <div class="stat-val" id="statCA">0</div>
+                  <div class="stat-label" data-key="statCA">
+                    Chiffre d'affaires (FCFA)
+                  </div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon green">🧾</div>
+                <div class="stat-info">
+                  <div class="stat-val" id="statVentes">0</div>
+                  <div class="stat-label" data-key="statVentes">
+                    Ventes totales
+                  </div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon orange">📦</div>
+                <div class="stat-info">
+                  <div class="stat-val" id="statProduits">0</div>
+                  <div class="stat-label" data-key="statProduits">
+                    Produits en stock
+                  </div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon red">⚠️</div>
+                <div class="stat-info">
+                  <div class="stat-val" id="statAlertes">0</div>
+                  <div class="stat-label" data-key="statAlertes">
+                    Alertes stock faible
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="card">
+                <div class="section-title">
+                  📈 <span data-key="caEvolution">Evolution du CA</span>
+                </div>
+                <canvas id="chartCA" height="140"></canvas>
+              </div>
+              <div class="card">
+                <div class="section-title">
+                  🏆 <span data-key="topProduits">Top produits vendus</span>
+                </div>
+                <canvas id="chartTop" height="140"></canvas>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="section-title">
+                🕐 <span data-key="lastSales">Dernières ventes</span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th data-key="thDate">Date</th>
+                      <th data-key="thProduit">Produit</th>
+                      <th data-key="thQte">Qté</th>
+                      <th data-key="thMontant">Montant</th>
+                      <th data-key="thStatut">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody id="lastSalesTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── VENTE ── -->
+          <section id="sec-sales" class="hidden">
+            <div class="card" style="margin-bottom: 24px">
+              <div class="section-title">
+                🛒 <span data-key="newSale">Nouvelle vente</span>
+              </div>
+              <div class="form-row">
+                <div class="field">
+                  <label data-key="prodLabel">Produit</label>
+                  <select id="saleProduct" style="min-width: 160px"></select>
+                </div>
+                <div class="field">
+                  <label data-key="qtyLabel">Quantité</label>
+                  <input
+                    id="saleQty"
+                    type="number"
+                    min="1"
+                    value="1"
+                    style="width: 100px"
+                  />
+                </div>
+                <div class="field" style="justify-content: flex-end">
+                  <div
+                    style="
+                      background: #f0f4f8;
+                      padding: 10px 16px;
+                      border-radius: 8px;
+                      font-size: 0.85rem;
+                      color: var(--muted);
+                    "
+                  >
+                    Total estimé :
+                    <strong id="saleTotal" style="color: var(--navy)"
+                      >0 FCFA</strong
+                    >
+                  </div>
+                </div>
+                <div class="field" style="justify-content: flex-end">
+                  <button
+                    class="btn btn-success"
+                    onclick="doSell()"
+                    data-key="validate"
+                  >
+                    ✅ Valider la vente
+                  </button>
+                </div>
+              </div>
+              <div
+                id="saleMsg"
+                style="min-height: 22px; font-size: 0.85rem; font-weight: 600"
+              ></div>
+            </div>
+
+            <div class="card">
+              <div class="section-title">
+                📋 <span data-key="todaySales">Ventes du jour</span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th data-key="thDate">Date/Heure</th>
+                      <th data-key="thProduit">Produit</th>
+                      <th data-key="thQte">Quantité</th>
+                      <th data-key="thMontant">Montant</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="todaySalesTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── STOCK ── -->
+          <section id="sec-stock" class="hidden">
+            <div class="card" style="margin-bottom: 20px">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  margin-bottom: 16px;
+                "
+              >
+                <div class="section-title" style="margin: 0">
+                  📦 <span data-key="stockTitle">Etat du stock</span>
+                </div>
+                <button
+                  class="btn btn-warning btn-sm"
+                  onclick="confirmResetStock()"
+                >
+                  🔄 <span data-key="resetStock">Remettre à zéro</span>
+                </button>
+              </div>
+              <div id="stockListUI"></div>
+            </div>
+            <div class="card">
+              <div class="section-title">
+                📊 <span data-key="stockChart">Visualisation du stock</span>
+              </div>
+              <canvas id="chartStock" height="120"></canvas>
+            </div>
+          </section>
+
+          <!-- ── HISTORIQUE ── -->
+          <section id="sec-history" class="hidden">
+            <div class="history-summary">
+              <div class="card">
+                <div class="section-title">
+                  🥧 <span data-key="ventesParProduit">Ventes par produit</span>
+                </div>
+                <canvas id="chartPie" height="200"></canvas>
+              </div>
+              <div class="card">
+                <div class="section-title">
+                  📅 <span data-key="resumeJour">Résumé du jour</span>
+                </div>
+                <div
+                  id="dailySummary"
+                  style="font-size: 0.9rem; line-height: 2"
+                ></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  margin-bottom: 16px;
+                "
+              >
+                <div class="section-title" style="margin: 0">
+                  📋
+                  <span data-key="allTransactions"
+                    >Toutes les transactions</span
+                  >
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="exportCSV()">
+                  ⬇️ Export CSV
+                </button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th data-key="thDate">Date/Heure</th>
+                      <th data-key="thProduit">Produit</th>
+                      <th data-key="thQte">Quantité</th>
+                      <th data-key="thMontant">Montant (FCFA)</th>
+                      <th data-key="thType">Type</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="historyTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── PRODUITS ── -->
+          <section id="sec-products" class="hidden">
+            <div class="card" style="margin-bottom: 20px">
+              <div class="section-title">
+                ➕ <span>Ajouter un produit</span>
+              </div>
+              <div class="add-product-form">
+                <div class="form-row">
+                  <div class="field">
+                    <label>Nom du produit</label>
+                    <input
+                      id="newProdName"
+                      type="text"
+                      placeholder="Ex: farine"
+                    />
+                  </div>
+                  <div class="field">
+                    <label>Prix unitaire (FCFA)</label>
+                    <input
+                      id="newProdPrix"
+                      type="number"
+                      min="1"
+                      placeholder="500"
+                      style="width: 140px"
+                    />
+                  </div>
+                  <div class="field">
+                    <label>Stock initial</label>
+                    <input
+                      id="newProdStock"
+                      type="number"
+                      min="0"
+                      placeholder="100"
+                      style="width: 120px"
+                    />
+                  </div>
+                  <div class="field" style="justify-content: flex-end">
+                    <button class="btn btn-primary" onclick="addProduct()">
+                      ➕ Ajouter
+                    </button>
+                  </div>
+                </div>
+                <div
+                  id="prodMsg"
+                  style="font-size: 0.85rem; font-weight: 600; min-height: 20px"
+                ></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="section-title">🏷️ Catalogue des produits</div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Produit</th>
+                      <th>Prix unitaire</th>
+                      <th>Stock actuel</th>
+                      <th>Statut</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="productsTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── SUPPORT ── -->
+          <section id="sec-support" class="hidden">
+            <div class="grid-2">
+              <div class="card">
+                <div class="section-title">
+                  💬 <span data-key="supportTitle">Contact & Support</span>
+                </div>
+                <p
+                  style="
+                    margin-bottom: 12px;
+                    font-size: 0.9rem;
+                    color: var(--muted);
+                  "
+                  data-key="supportDesc"
+                >
+                  Notre équipe est disponible pour vous aider.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 12px">
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 12px;
+                      padding: 14px;
+                      background: #f8fafc;
+                      border-radius: 10px;
+                    "
+                  >
+                    <span style="font-size: 1.3rem">📧</span>
+                    <div>
+                      <div style="font-weight: 600; font-size: 0.88rem">
+                        Email
+                      </div>
+                      <div style="color: var(--accent); font-size: 0.85rem">
+                        support@g360.sn
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 12px;
+                      padding: 14px;
+                      background: #f8fafc;
+                      border-radius: 10px;
+                    "
+                  >
+                    <span style="font-size: 1.3rem">📱</span>
+                    <div>
+                      <div style="font-weight: 600; font-size: 0.88rem">
+                        WhatsApp
+                      </div>
+                      <div style="color: var(--accent); font-size: 0.85rem">
+                        +221 77 000 00 00
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 12px;
+                      padding: 14px;
+                      background: #f8fafc;
+                      border-radius: 10px;
+                    "
+                  >
+                    <span style="font-size: 1.3rem">🕐</span>
+                    <div>
+                      <div
+                        style="font-weight: 600; font-size: 0.88rem"
+                        data-key="horaires"
+                      >
+                        Horaires
+                      </div>
+                      <div style="color: var(--muted); font-size: 0.85rem">
+                        Lun – Sam : 08h00 – 20h00
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="section-title">📖 À propos de G-360</div>
+                <p
+                  style="
+                    font-size: 0.88rem;
+                    color: var(--muted);
+                    line-height: 1.7;
+                  "
+                >
+                  G-360 est une solution digitale de gestion commerciale conçue
+                  spécifiquement pour les petites et moyennes entreprises
+                  sénégalaises.<br /><br />
+                  Elle permet de gérer les stocks, les ventes et les clients de
+                  manière simple, accessible et en langue wolof.<br /><br />
+                  <strong>Version :</strong> 1.0 (Prototype)<br />
+                  <strong>Développeur :</strong> Madzou Frederic Franchir<br />
+                  <strong>Formation :</strong> Bachelor IAGE – ISM Dakar
+                </p>
+              </div>
+            </div>
+          </section>
+        </div>
+        <!-- /content -->
+      </main>
+    </div>
+    <!-- /app -->
+
+    <!-- ═══════════ MODAL CONFIRM ═══════════ -->
+    <div class="modal-overlay hidden" id="modalOverlay">
+      <div class="modal-box">
+        <div class="modal-title" id="modalTitle">Confirmation</div>
+        <div
+          id="modalBody"
+          style="font-size: 0.9rem; color: var(--muted); line-height: 1.6"
+        ></div>
+        <div class="modal-actions">
+          <button class="btn btn-outline" onclick="closeModal()">
+            Annuler
+          </button>
+          <button class="btn btn-danger" id="modalConfirmBtn">Confirmer</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ══════════════════════════════════════════
+      // TRADUCTIONS
+      // ══════════════════════════════════════════
+      const T = {
+        fr: {
+          loginSub: "Gestion Commerciale PME",
+          userLabel: "Utilisateur",
+          passLabel: "Mot de passe",
+          loginBtn: "Connexion",
+          dashboard: "Dashboard",
+          salesNav: "Vente",
+          stockNav: "Stock",
+          historyNav: "Historique",
+          supportNav: "Support",
+          statCA: "Chiffre d'affaires (FCFA)",
+          statVentes: "Ventes totales",
+          statProduits: "Produits en stock",
+          statAlertes: "Alertes stock faible",
+          caEvolution: "Évolution du CA",
+          topProduits: "Top produits vendus",
+          lastSales: "Dernières ventes",
+          newSale: "Nouvelle vente",
+          prodLabel: "Produit",
+          qtyLabel: "Quantité",
+          validate: "✅ Valider la vente",
+          todaySales: "Ventes du jour",
+          stockTitle: "État du stock",
+          resetStock: "Remettre à zéro",
+          stockChart: "Visualisation du stock",
+          ventesParProduit: "Ventes par produit",
+          resumeJour: "Résumé du jour",
+          allTransactions: "Toutes les transactions",
+          supportTitle: "Contact & Support",
+          supportDesc: "Notre équipe est disponible pour vous aider.",
+          horaires: "Horaires",
+          thDate: "Date/Heure",
+          thProduit: "Produit",
+          thQte: "Qté",
+          thMontant: "Montant",
+          thStatut: "Statut",
+          thType: "Type",
+        },
+        wo: {
+          loginSub: "Jëfandikoo Jaay-jaay PME",
+          userLabel: "Jëfandikkat",
+          passLabel: "Diggël",
+          loginBtn: "Dugg",
+          dashboard: "Tëralin",
+          salesNav: "Jaay",
+          stockNav: "Yëngu",
+          historyNav: "Taarix",
+          supportNav: "Ndimbal",
+          statCA: "Xaalis (FCFA)",
+          statVentes: "Jaay yi",
+          statProduits: "Xam-xam yi",
+          statAlertes: "Tiis ak yëngu",
+          caEvolution: "Jaay ak xaalis",
+          topProduits: "Ndigël jaay",
+          lastSales: "Jaay bu mujj yi",
+          newSale: "Jaay bu bees",
+          prodLabel: "Xam-xam",
+          qtyLabel: "Yëgël",
+          validate: "✅ Wone",
+          todaySales: "Jaay tey",
+          stockTitle: "Yëngu bi",
+          resetStock: "Sett ci kanam",
+          stockChart: "Xalaat yëngu",
+          ventesParProduit: "Jaay yi ci xam-xam",
+          resumeJour: "Biir bés bi",
+          allTransactions: "Jaay yëp",
+          supportTitle: "Ndimbal",
+          supportDesc: "Team bi ci nga am ndimbal.",
+          horaires: "Yoon bu xëtu",
+          thDate: "Waxtu",
+          thProduit: "Xam-xam",
+          thQte: "Yëgël",
+          thMontant: "Xaalis",
+          thStatut: "Yoon",
+          thType: "Suñu",
+        },
+      };
+
+      // ══════════════════════════════════════════
+      // STATE
+      // ══════════════════════════════════════════
+      let lang = "fr";
+      let currentSection = "dashboard";
+      let activeNavBtn = null;
+
+      let data = JSON.parse(localStorage.getItem("g360_data")) || {
+        ca: 0,
+        salesCount: 0,
+        history: [],
+        chartCA: [],
+        products: {
+          pain: { stock: 50, prix: 200 },
+          sucre: { stock: 30, prix: 500 },
+          oeuf: { stock: 100, prix: 100 },
+          thon: { stock: 20, prix: 1500 },
+          cafe: { stock: 40, prix: 800 },
+        },
+      };
+
+      const STOCK_ALERT = 20;
+
+      // ══════════════════════════════════════════
+      // SAVE / LANG
+      // ══════════════════════════════════════════
+      function save() {
+        localStorage.setItem("g360_data", JSON.stringify(data));
+      }
+
+      function setLang(l, btn) {
+        lang = l;
+        // update sidebar buttons
+        document.getElementById("btnFR").classList.toggle("active", l === "fr");
+        document.getElementById("btnWO").classList.toggle("active", l === "wo");
+        // update login lang buttons
+        document
+          .querySelectorAll(".lang-btn")
+          .forEach((b) => b.classList.remove("active"));
+        if (btn) btn.classList.add("active");
+        // apply translations
+        document.querySelectorAll("[data-key]").forEach((el) => {
+          const k = el.dataset.key;
+          if (T[l][k]) el.textContent = T[l][k];
+        });
+      }
+
+      // ══════════════════════════════════════════
+      // LOGIN / LOGOUT
+      // ══════════════════════════════════════════
+      function doLogin() {
+        const u = document.getElementById("loginUser").value;
+        const p = document.getElementById("loginPass").value;
+        if (u === "admin" && p === "1234") {
+          document.getElementById("loginPage").classList.add("hidden");
+          document.getElementById("app").classList.remove("hidden");
+          initApp();
+        } else {
+          document.getElementById("loginErr").textContent =
+            lang === "wo"
+              ? "⚠️ Diggël dafa faw!"
+              : "⚠️ Identifiants incorrects";
+        }
+      }
+
+      function doLogout() {
+        location.reload();
+      }
+
+      // ══════════════════════════════════════════
+      // INIT
+      // ══════════════════════════════════════════
+      function initApp() {
+        updateDate();
+        setInterval(updateDate, 60000);
+        // set first nav btn as active
+        activeNavBtn = document.querySelector(".nav-item.active");
+        show("dashboard", activeNavBtn);
+        setLang(lang);
+      }
+
+      function updateDate() {
+        const now = new Date();
+        document.getElementById("topDate").textContent = now.toLocaleDateString(
+          "fr-FR",
+          { weekday: "long", year: "numeric", month: "long", day: "numeric" },
+        );
+      }
+
+      // ══════════════════════════════════════════
+      // NAVIGATION
+      // ══════════════════════════════════════════
+      const sectionTitles = {
+        dashboard: "Dashboard",
+        sales: "Vente",
+        stock: "Stock",
+        history: "Historique",
+        products: "Produits",
+        support: "Support",
+      };
+
+      function show(name, btn) {
+        // hide all
+        document
+          .querySelectorAll(".main .content > section")
+          .forEach((s) => s.classList.add("hidden"));
+        // show target
+        document.getElementById("sec-" + name).classList.remove("hidden");
+        // nav highlight
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((b) => b.classList.remove("active"));
+        if (btn) {
+          btn.classList.add("active");
+          activeNavBtn = btn;
+        }
+        // page title
+        document.getElementById("pageTitle").textContent =
+          sectionTitles[name] || name;
+        currentSection = name;
+        // render
+        if (name === "dashboard") renderDashboard();
+        if (name === "sales") renderSales();
+        if (name === "stock") renderStock();
+        if (name === "history") renderHistory();
+        if (name === "products") renderProducts();
+      }
+
+      // ══════════════════════════════════════════
+      // SELL
+      // ══════════════════════════════════════════
+      function renderSales() {
+        // populate select
+        const sel = document.getElementById("saleProduct");
+        sel.innerHTML = "";
+        for (const p in data.products) {
+          const opt = document.createElement("option");
+          opt.value = p;
+          opt.text = `${p} (${data.products[p].stock} dispo)`;
+          sel.appendChild(opt);
+        }
+        sel.onchange = updateSaleTotal;
+        document.getElementById("saleQty").oninput = updateSaleTotal;
+        updateSaleTotal();
+        renderTodaySales();
+      }
+
+      function updateSaleTotal() {
+        const p = document.getElementById("saleProduct").value;
+        const q = Number(document.getElementById("saleQty").value) || 0;
+        const prix = data.products[p] ? data.products[p].prix : 0;
+        document.getElementById("saleTotal").textContent =
+          (prix * q).toLocaleString() + " FCFA";
+      }
+
+      function doSell() {
+        const p = document.getElementById("saleProduct").value;
+        const q = Number(document.getElementById("saleQty").value);
+        const msg = document.getElementById("saleMsg");
+
+        if (!p || q <= 0) {
+          msg.style.color = "var(--danger)";
+          msg.textContent = "⚠️ Quantité invalide";
+          return;
+        }
+        if (!data.products[p]) {
+          msg.style.color = "var(--danger)";
+          msg.textContent = "⚠️ Produit introuvable";
+          return;
+        }
+        if (data.products[p].stock < q) {
+          msg.style.color = "var(--danger)";
+          msg.textContent =
+            lang === "wo"
+              ? `⚠️ Yëngu bi dafa tane!`
+              : `⚠️ Stock insuffisant ! (${data.products[p].stock} dispo)`;
+          return;
+        }
+
+        const total = q * data.products[p].prix;
+        const now = new Date();
+
+        data.products[p].stock -= q;
+        data.ca += total;
+        data.salesCount += 1;
+        data.chartCA.push(data.ca);
+
+        data.history.unshift({
+          id: Date.now(),
+          date: now.toLocaleDateString("fr-FR"),
+          heure: now.toLocaleTimeString("fr-FR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          produit: p,
+          qte: q,
+          montant: total,
+          type: "vente",
+        });
+
+        save();
+
+        msg.style.color = "var(--success)";
+        msg.textContent = `✅ Vente enregistrée : ${p} × ${q} = ${total.toLocaleString()} FCFA`;
+        setTimeout(() => (msg.textContent = ""), 4000);
+
+        showToast(
+          `Vente : ${p} × ${q}`,
+          `${total.toLocaleString()} FCFA encaissés`,
+          "success",
+        );
+
+        // stock alert
+        if (data.products[p].stock <= STOCK_ALERT) {
+          showToast(
+            `⚠️ Stock faible : ${p}`,
+            `Il reste ${data.products[p].stock} unités`,
+            "warning",
+          );
+          updateStockBadge();
+        }
+
+        renderSales();
+        renderDashboard();
+      }
+
+      function renderTodaySales() {
+        const today = new Date().toLocaleDateString("fr-FR");
+        const tbody = document.getElementById("todaySalesTable");
+        const sales = data.history.filter(
+          (h) => h.date === today && h.type === "vente",
+        );
+        if (!sales.length) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">Aucune vente aujourd'hui</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = sales
+          .map(
+            (h, i) => `
+    <tr>
+      <td>${h.date} ${h.heure}</td>
+      <td><strong style="text-transform:capitalize">${h.produit}</strong></td>
+      <td>${h.qte}</td>
+      <td><strong>${h.montant.toLocaleString()} FCFA</strong></td>
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="deleteSale(${h.id})">🗑️ Supprimer</button>
+      </td>
+    </tr>`,
+          )
+          .join("");
+      }
+
+      function deleteSale(id) {
+        openModal(
+          "🗑️ Supprimer cette vente ?",
+          "Cette action annulera la vente et remettra le stock à son niveau précédent.",
+          () => {
+            const idx = data.history.findIndex((h) => h.id === id);
+            if (idx === -1) return;
+            const h = data.history[idx];
+            // restore stock & CA
+            if (data.products[h.produit])
+              data.products[h.produit].stock += h.qte;
+            data.ca -= h.montant;
+            data.salesCount -= 1;
+            data.history.splice(idx, 1);
+            // rebuild chartCA from scratch
+            data.chartCA = [];
+            let cumul = 0;
+            [...data.history].reverse().forEach((h) => {
+              cumul += h.montant;
+              data.chartCA.push(cumul);
+            });
+            save();
+            showToast("Vente supprimée", "Stock et CA mis à jour", "success");
+            renderSales();
+            renderDashboard();
+            updateStockBadge();
+          },
+        );
+      }
+
+      // ══════════════════════════════════════════
+      // STOCK
+      // ══════════════════════════════════════════
+      function renderStock() {
+        const container = document.getElementById("stockListUI");
+        const maxStock = Math.max(
+          ...Object.values(data.products).map((p) => p.stock),
+          1,
+        );
+        container.innerHTML = Object.entries(data.products)
+          .map(([name, p]) => {
+            const pct = Math.round((p.stock / Math.max(maxStock, 1)) * 100);
+            const cls =
+              p.stock <= 10
+                ? "danger"
+                : p.stock <= STOCK_ALERT
+                  ? "warning"
+                  : "ok";
+            return `
+    <div class="stock-item">
+      <div class="stock-item-info">
+        <div class="stock-item-name">${name}</div>
+        <div class="stock-item-prix">${p.prix.toLocaleString()} FCFA/unité</div>
+      </div>
+      <div class="stock-bar-wrap">
+        <div class="stock-bar-bg">
+          <div class="stock-bar-fill ${cls}" style="width:${pct}%"></div>
+        </div>
+      </div>
+      <div class="stock-qty" style="color:${cls === "danger" ? "var(--danger)" : cls === "warning" ? "var(--warning)" : "var(--success)"}">${p.stock}</div>
+      <div class="stock-actions">
+        <button class="btn btn-outline btn-sm" onclick="restock('${name}')" title="Réapprovisionner">➕</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDeleteProduct('${name}')" title="Supprimer">🗑️</button>
+      </div>
+    </div>`;
+          })
+          .join("");
+
+        // stock bar chart
+        drawStockChart();
+        updateStockBadge();
+      }
+
+      function restock(name) {
+        const q = prompt(`Combien d'unités ajouter pour "${name}" ?`);
+        const n = parseInt(q);
+        if (!n || n <= 0) return;
+        data.products[name].stock += n;
+        save();
+        renderStock();
+        showToast(`Stock mis à jour`, `+${n} unités pour ${name}`, "success");
+      }
+
+      function confirmResetStock() {
+        openModal(
+          "🔄 Remettre le stock à zéro ?",
+          "⚠️ Tous les stocks de tous les produits seront mis à 0. Cette action est irréversible.",
+          () => {
+            for (const p in data.products) data.products[p].stock = 0;
+            save();
+            renderStock();
+            showToast(
+              "Stock remis à zéro",
+              "Tous les produits sont à 0",
+              "warning",
+            );
+          },
+        );
+      }
+
+      function confirmDeleteProduct(name) {
+        openModal(
+          `🗑️ Supprimer "${name}" ?`,
+          "Ce produit sera retiré du catalogue. Les ventes passées seront conservées dans l'historique.",
+          () => {
+            delete data.products[name];
+            save();
+            renderStock();
+            renderProducts();
+            showToast(
+              "Produit supprimé",
+              name + " a été retiré du catalogue",
+              "danger",
+            );
+          },
+        );
+      }
+
+      function updateStockBadge() {
+        const alerts = Object.values(data.products).filter(
+          (p) => p.stock <= STOCK_ALERT,
+        ).length;
+        const badge = document.getElementById("stockBadge");
+        if (alerts > 0) {
+          badge.textContent = alerts;
+          badge.classList.remove("hidden");
+        } else {
+          badge.classList.add("hidden");
+        }
+      }
+
+      // ══════════════════════════════════════════
+      // HISTORIQUE
+      // ══════════════════════════════════════════
+      function renderHistory() {
+        const tbody = document.getElementById("historyTable");
+        if (!data.history.length) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Aucune transaction</td></tr>`;
+        } else {
+          tbody.innerHTML = data.history
+            .map(
+              (h, i) => `
+      <tr>
+        <td style="color:var(--muted);font-size:0.8rem">${data.history.length - i}</td>
+        <td style="font-size:0.82rem">${h.date} ${h.heure || ""}</td>
+        <td><strong style="text-transform:capitalize">${h.produit}</strong></td>
+        <td>${h.qte}</td>
+        <td><strong>${h.montant.toLocaleString()} FCFA</strong></td>
+        <td><span class="badge-pill badge-success">Vente</span></td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteSale(${h.id})">🗑️</button></td>
+      </tr>`,
+            )
+            .join("");
+        }
+
+        // daily summary
+        const today = new Date().toLocaleDateString("fr-FR");
+        const todaySales = data.history.filter((h) => h.date === today);
+        const todayCA = todaySales.reduce((a, h) => a + h.montant, 0);
+        document.getElementById("dailySummary").innerHTML = `
+    <div style="display:grid;gap:8px">
+      <div style="display:flex;justify-content:space-between;padding:10px 14px;background:#f8fafc;border-radius:8px">
+        <span style="color:var(--muted)">📅 Date</span>
+        <strong>${today}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:10px 14px;background:#f8fafc;border-radius:8px">
+        <span style="color:var(--muted)">🧾 Ventes du jour</span>
+        <strong>${todaySales.length}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:10px 14px;background:#e6f9ee;border-radius:8px">
+        <span style="color:var(--muted)">💰 CA du jour</span>
+        <strong style="color:var(--success)">${todayCA.toLocaleString()} FCFA</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:10px 14px;background:#f8fafc;border-radius:8px">
+        <span style="color:var(--muted)">💰 CA total</span>
+        <strong>${data.ca.toLocaleString()} FCFA</strong>
+      </div>
+    </div>`;
+
+        drawPieChart();
+      }
+
+      // ══════════════════════════════════════════
+      // PRODUITS
+      // ══════════════════════════════════════════
+      function renderProducts() {
+        const tbody = document.getElementById("productsTable");
+        tbody.innerHTML = Object.entries(data.products)
+          .map(([name, p]) => {
+            const cls =
+              p.stock <= 10
+                ? "badge-danger"
+                : p.stock <= STOCK_ALERT
+                  ? "badge-warning"
+                  : "badge-success";
+            const label =
+              p.stock <= 10
+                ? "Critique"
+                : p.stock <= STOCK_ALERT
+                  ? "Faible"
+                  : "OK";
+            return `<tr>
+      <td><strong style="text-transform:capitalize">${name}</strong></td>
+      <td>${p.prix.toLocaleString()} FCFA</td>
+      <td>${p.stock}</td>
+      <td><span class="badge-pill ${cls}">${label}</span></td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm" onclick="restock('${name}')">➕ Réappro</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDeleteProduct('${name}')">🗑️</button>
+      </td>
+    </tr>`;
+          })
+          .join("");
+      }
+
+      function addProduct() {
+        const name = document
+          .getElementById("newProdName")
+          .value.trim()
+          .toLowerCase();
+        const prix = parseInt(document.getElementById("newProdPrix").value);
+        const stock =
+          parseInt(document.getElementById("newProdStock").value) || 0;
+        const msg = document.getElementById("prodMsg");
+
+        if (!name) {
+          msg.style.color = "var(--danger)";
+          msg.textContent = "⚠️ Nom requis";
+          return;
+        }
+        if (!prix || prix <= 0) {
+          msg.style.color = "var(--danger)";
+          msg.textContent = "⚠️ Prix invalide";
+          return;
+        }
+        if (data.products[name]) {
+          msg.style.color = "var(--danger)";
+          msg.textContent = "⚠️ Ce produit existe déjà";
+          return;
+        }
+
+        data.products[name] = { stock, prix };
+        save();
+        msg.style.color = "var(--success)";
+        msg.textContent = `✅ Produit "${name}" ajouté !`;
+        document.getElementById("newProdName").value = "";
+        document.getElementById("newProdPrix").value = "";
+        document.getElementById("newProdStock").value = "";
+        setTimeout(() => (msg.textContent = ""), 3000);
+        renderProducts();
+        showToast("Produit ajouté", name + " est dans le catalogue", "success");
+      }
+
+      // ══════════════════════════════════════════
+      // DASHBOARD
+      // ══════════════════════════════════════════
+      function renderDashboard() {
+        document.getElementById("statCA").textContent =
+          data.ca.toLocaleString();
+        document.getElementById("statVentes").textContent = data.salesCount;
+        const totalStock = Object.values(data.products).reduce(
+          (a, p) => a + p.stock,
+          0,
+        );
+        document.getElementById("statProduits").textContent = totalStock;
+        const alerts = Object.values(data.products).filter(
+          (p) => p.stock <= STOCK_ALERT,
+        ).length;
+        document.getElementById("statAlertes").textContent = alerts;
+
+        // last sales
+        const tbody = document.getElementById("lastSalesTable");
+        const last5 = data.history.slice(0, 5);
+        if (!last5.length) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">Aucune vente</td></tr>`;
+        } else {
+          tbody.innerHTML = last5
+            .map(
+              (h) => `
+      <tr>
+        <td style="font-size:0.82rem">${h.date} ${h.heure || ""}</td>
+        <td style="text-transform:capitalize"><strong>${h.produit}</strong></td>
+        <td>${h.qte}</td>
+        <td><strong>${h.montant.toLocaleString()} FCFA</strong></td>
+        <td><span class="badge-pill badge-success">✅ Vente</span></td>
+      </tr>`,
+            )
+            .join("");
+        }
+
+        drawCAChart();
+        drawTopChart();
+        updateStockBadge();
+      }
+
+      // ══════════════════════════════════════════
+      // CHARTS
+      // ══════════════════════════════════════════
+      let chartCA, chartTop, chartStock, chartPie;
+
+      function drawCAChart() {
+        const ctx = document.getElementById("chartCA");
+        if (chartCA) chartCA.destroy();
+        chartCA = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: data.chartCA.map((_, i) => `V${i + 1}`),
+            datasets: [
+              {
+                label: "CA cumulé (FCFA)",
+                data: data.chartCA,
+                borderColor: "#00b4d8",
+                backgroundColor: "rgba(0,180,216,0.08)",
+                borderWidth: 2.5,
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+                pointBackgroundColor: "#00b4d8",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { callback: (v) => v.toLocaleString() },
+              },
+            },
+          },
+        });
+      }
+
+      function drawTopChart() {
+        const ctx = document.getElementById("chartTop");
+        if (chartTop) chartTop.destroy();
+
+        const counts = {};
+        data.history.forEach((h) => {
+          counts[h.produit] = (counts[h.produit] || 0) + h.qte;
+        });
+        const sorted = Object.entries(counts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5);
+
+        chartTop = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: sorted.map(([n]) => n),
+            datasets: [
+              {
+                label: "Unités vendues",
+                data: sorted.map(([, v]) => v),
+                backgroundColor: [
+                  "#00b4d8",
+                  "#0077b6",
+                  "#415a77",
+                  "#2dc653",
+                  "#f4a261",
+                ],
+                borderRadius: 6,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } },
+          },
+        });
+      }
+
+      function drawStockChart() {
+        const ctx = document.getElementById("chartStock");
+        if (chartStock) chartStock.destroy();
+        const colors = Object.values(data.products).map((p) =>
+          p.stock <= 10
+            ? "#e63946"
+            : p.stock <= STOCK_ALERT
+              ? "#f4a261"
+              : "#2dc653",
+        );
+        chartStock = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: Object.keys(data.products),
+            datasets: [
+              {
+                label: "Stock",
+                data: Object.values(data.products).map((p) => p.stock),
+                backgroundColor: colors,
+                borderRadius: 6,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } },
+          },
+        });
+      }
+
+      function drawPieChart() {
+        const ctx = document.getElementById("chartPie");
+        if (chartPie) chartPie.destroy();
+
+        const counts = {};
+        data.history.forEach((h) => {
+          counts[h.produit] = (counts[h.produit] || 0) + h.montant;
+        });
+
+        if (!Object.keys(counts).length) {
+          ctx.parentElement.innerHTML =
+            '<p style="text-align:center;color:var(--muted);padding:40px">Aucune donnée</p>';
+          return;
+        }
+
+        chartPie = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: Object.keys(counts),
+            datasets: [
+              {
+                data: Object.values(counts),
+                backgroundColor: [
+                  "#00b4d8",
+                  "#0077b6",
+                  "#415a77",
+                  "#2dc653",
+                  "#f4a261",
+                  "#e63946",
+                ],
+                borderWidth: 2,
+                borderColor: "#fff",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: { padding: 16, font: { size: 11 } },
+              },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) =>
+                    ` ${ctx.label} : ${ctx.raw.toLocaleString()} FCFA`,
+                },
+              },
+            },
+          },
+        });
+      }
+
+      // ══════════════════════════════════════════
+      // TOAST NOTIFICATIONS
+      // ══════════════════════════════════════════
+      function showToast(title, msg, type = "success") {
+        const zone = document.getElementById("alertZone");
+        const icons = { success: "✅", warning: "⚠️", danger: "❌" };
+        const div = document.createElement("div");
+        div.className = `alert-toast ${type}`;
+        div.innerHTML = `
+    <span class="alert-icon">${icons[type] || "ℹ️"}</span>
+    <div class="alert-body">
+      <div class="alert-title">${title}</div>
+      <div class="alert-msg">${msg}</div>
+    </div>
+    <button class="alert-close" onclick="this.parentElement.remove()">✕</button>`;
+        zone.appendChild(div);
+        setTimeout(() => div.remove(), 5000);
+      }
+
+      // ══════════════════════════════════════════
+      // MODAL
+      // ══════════════════════════════════════════
+      let modalCallback = null;
+
+      function openModal(title, body, cb) {
+        document.getElementById("modalTitle").textContent = title;
+        document.getElementById("modalBody").textContent = body;
+        modalCallback = cb;
+        document.getElementById("modalOverlay").classList.remove("hidden");
+        document.getElementById("modalConfirmBtn").onclick = () => {
+          closeModal();
+          if (cb) cb();
+        };
+      }
+
+      function closeModal() {
+        document.getElementById("modalOverlay").classList.add("hidden");
+        modalCallback = null;
+      }
+
+      // close modal on overlay click
+      document
+        .getElementById("modalOverlay")
+        .addEventListener("click", function (e) {
+          if (e.target === this) closeModal();
+        });
+
+      // ══════════════════════════════════════════
+      // EXPORT CSV
+      // ══════════════════════════════════════════
+      function exportCSV() {
+        if (!data.history.length) {
+          showToast("Export impossible", "Aucune donnée à exporter", "warning");
+          return;
+        }
+        const rows = [
+          ["#", "Date", "Heure", "Produit", "Quantite", "Montant FCFA", "Type"],
+        ];
+        data.history.forEach((h, i) => {
+          rows.push([
+            i + 1,
+            h.date,
+            h.heure || "",
+            h.produit,
+            h.qte,
+            h.montant,
+            h.type || "vente",
+          ]);
+        });
+        const csv = rows.map((r) => r.join(";")).join("\n");
+        const blob = new Blob(["\uFEFF" + csv], {
+          type: "text/csv;charset=utf-8;",
+        });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `G360_historique_${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        showToast("Export réussi", "Fichier CSV téléchargé", "success");
+      }
+
+      // ══════════════════════════════════════════
+      // ENTER KEY on login
+      // ══════════════════════════════════════════
+      document.getElementById("loginUser").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") document.getElementById("loginPass").focus();
+      });
+    </script>
+  </body>
+</html>
