@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="./CSS/style.css" />
     <title>G-360 Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
   </head>
   <body>
     <!-- Zone d'alerte-->
@@ -25,11 +24,16 @@
         <div class="login-logo">G<span>-</span>360</div>
         <div class="login-sub" data-key="loginSub">Gestion Commerciale PME</div>
         <div class="login-lang">
-          <button class="lang-btn active" onclick="setLang('fr', this)">
-            <img src="./favicon-16x16_france.png" alt="" srcset="" /> Français
+          <!-- APRÈS (ids uniques + onclick) -->
+          <button
+            class="active lang-btn"
+            id="btnFR2"
+            onclick="setLang('fr', this)"
+          >
+            <img src="./favicon-16x16_france.png" alt="" srcset="" />FR
           </button>
-          <button class="lang-btn" onclick="setLang('wo', this)">
-            <img src="./favicon-16x16_senegal.png" alt="" srcset="" /> Wolof
+          <button class="lang-btn" id="btnWO2" onclick="setLang('wo', this)">
+            <img src="./favicon-16x16_senegal.png" alt="" srcset="" />WO
           </button>
         </div>
         <div class="form-group">
@@ -48,9 +52,27 @@
         <button class="btn-login" onclick="doLogin()" data-key="loginBtn">
           Connexion
         </button>
+        <p style="margin-top: 10px; text-align: center">
+          <a href="#" onclick="showRegister()">
+            <span data-key="createAccount">Créer un compte</span>
+          </a>
+        </p>
         <div class="login-error" id="loginErr"></div>
       </div>
     </div>
+    <div id="registerPage" class="hidden">
+      <h2>Inscription</h2>
+
+      <input type="text" id="registerUser" placeholder="Nom utilisateur" />
+      <input type="password" id="registerPass" placeholder="Mot de passe" />
+
+      <button onclick="doRegister()">Créer un compte</button>
+
+      <p id="registerMsg"></p>
+
+      <button onclick="showLogin()">Déjà un compte ? Se connecter</button>
+    </div>
+    <button onclick="showRegister()">Créer un compte</button>
 
     <!-- ═══════════ APP ═══════════ -->
     <div id="app" class="hidden">
@@ -66,59 +88,48 @@
         <div class="nav-section">Menu</div>
         <button
           class="nav-item active"
-          onclick="show('dashboard', this)"
+          data-page="dashboard"
           data-key="dashboard"
         >
-          <span class="icon">📊</span
-          ><span data-key="dashboard">Dashboard</span>
+          <span class="icon"><i class="fa-solid fa-gauge-high"></i></span>
+          <span data-key="dashboard">Dashboard</span>
         </button>
-        <button
-          class="nav-item"
-          onclick="show('sales', this)"
-          data-key="salesNav"
-        >
-          <span class="icon">🛒</span><span data-key="salesNav">Vente</span>
+        <button class="nav-item" data-page="sales" data-key="salesNav">
+          <span class="icon"><i class="fa-solid fa-cart-shopping"></i></span>
+          <span data-key="salesNav">Vente</span>
         </button>
-        <button
-          class="nav-item"
-          onclick="show('stock', this)"
-          data-key="stockNav"
-        >
-          <span class="icon">📦</span><span data-key="stockNav">Stock</span>
+        <button class="nav-item" data-page="stock" data-key="stockNav">
+          <span class="icon"><i class="fa-solid fa-boxes-stacked"></i></span>
+          <span data-key="stockNav">Stock</span>
           <span class="badge hidden" id="stockBadge">0</span>
         </button>
-        <button
-          class="nav-item"
-          onclick="show('history', this)"
-          data-key="historyNav"
-        >
-          <span class="icon">📋</span
-          ><span data-key="historyNav">Historique</span>
+        <button class="nav-item" data-page="history" data-key="historyNav">
+          <span class="icon"><i class="fa-solid fa-clipboard-list"></i></span>
+          <span data-key="historyNav">Historique</span>
         </button>
 
         <div class="nav-section">Gestion</div>
-        <button class="nav-item" onclick="show('products', this)">
-          <span class="icon">🏷️</span><span>Produits</span>
+        <button class="nav-item" data-page="products">
+          <span class="icon"><i class="fa-solid fa-tags"></i></span>
+          <span>Produits</span>
         </button>
-        <button
-          class="nav-item"
-          onclick="show('support', this)"
-          data-key="supportNav"
-        >
-          <span class="icon">💬</span><span data-key="supportNav">Support</span>
+        <button class="nav-item" data-page="support" data-key="supportNav">
+          <span class="icon"><i class="fa-solid fa-headset"></i></span>
+          <span data-key="supportNav">Support</span>
         </button>
 
         <div class="sidebar-footer">
           <div class="sidebar-lang">
-            <button class="active" id="btnFR" onclick="setLang('fr', this)">
+            <button class="active lang-btn" id="btnFR" data-lang="fr">
               <img src="./favicon-16x16_france.png" alt="" srcset="" />FR
             </button>
-            <button id="btnWO" onclick="setLang('wo', this)">
+            <button class="lang-btn" id="btnWO" data-lang="wo">
               <img src="./favicon-16x16_senegal.png" alt="" srcset="" />WO
             </button>
           </div>
-          <button class="btn-logout" onclick="doLogout()">
-            <span>🚪</span><span>Déconnexion</span>
+          <button class="btn-logout" id="logoutBtn">
+            <span><i class="fa-solid fa-right-from-bracket"></i></span>
+            <span>Déconnexion</span>
           </button>
         </div>
       </aside>
@@ -135,7 +146,9 @@
           <section id="sec-dashboard">
             <div class="grid-4">
               <div class="stat-card">
-                <div class="stat-icon blue">💰</div>
+                <div class="stat-icon blue">
+                  <i class="fa-solid fa-sack-dollar"></i>
+                </div>
                 <div class="stat-info">
                   <div class="stat-val" id="statCA">0</div>
                   <div class="stat-label" data-key="statCA">
@@ -144,7 +157,9 @@
                 </div>
               </div>
               <div class="stat-card">
-                <div class="stat-icon green">🧾</div>
+                <div class="stat-icon green">
+                  <i class="fa-solid fa-receipt"></i>
+                </div>
                 <div class="stat-info">
                   <div class="stat-val" id="statVentes">0</div>
                   <div class="stat-label" data-key="statVentes">
@@ -153,7 +168,9 @@
                 </div>
               </div>
               <div class="stat-card">
-                <div class="stat-icon orange">📦</div>
+                <div class="stat-icon orange">
+                  <i class="fa-solid fa-boxes-stacked"></i>
+                </div>
                 <div class="stat-info">
                   <div class="stat-val" id="statProduits">0</div>
                   <div class="stat-label" data-key="statProduits">
@@ -162,7 +179,9 @@
                 </div>
               </div>
               <div class="stat-card">
-                <div class="stat-icon red">⚠️</div>
+                <div class="stat-icon red">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
                 <div class="stat-info">
                   <div class="stat-val" id="statAlertes">0</div>
                   <div class="stat-label" data-key="statAlertes">
@@ -175,13 +194,15 @@
             <div class="grid-2">
               <div class="card">
                 <div class="section-title">
-                  📈 <span data-key="caEvolution">Evolution du CA</span>
+                  <i class="fa-solid fa-chart-line"></i>
+                  <span data-key="caEvolution">Evolution du CA</span>
                 </div>
                 <canvas id="chartCA" height="140"></canvas>
               </div>
               <div class="card">
                 <div class="section-title">
-                  🏆 <span data-key="topProduits">Top produits vendus</span>
+                  <i class="fa-solid fa-trophy"></i>
+                  <span data-key="topProduits">Top produits vendus</span>
                 </div>
                 <canvas id="chartTop" height="140"></canvas>
               </div>
@@ -189,7 +210,8 @@
 
             <div class="card">
               <div class="section-title">
-                🕐 <span data-key="lastSales">Dernières ventes</span>
+                <i class="fa-solid fa-clock"></i>
+                <span data-key="lastSales">Dernières ventes</span>
               </div>
               <div class="table-wrap">
                 <table>
@@ -212,7 +234,8 @@
           <section id="sec-sales" class="hidden">
             <div class="card" style="margin-bottom: 24px">
               <div class="section-title">
-                🛒 <span data-key="newSale">Nouvelle vente</span>
+                <i class="fa-solid fa-cart-plus"></i>
+                <span data-key="newSale">Nouvelle vente</span>
               </div>
               <div class="form-row">
                 <div class="field">
@@ -251,7 +274,7 @@
                     onclick="doSell()"
                     data-key="validate"
                   >
-                    ✅ Valider la vente
+                    <i class="fa-solid fa-circle-check"></i> Valider la vente
                   </button>
                 </div>
               </div>
@@ -263,7 +286,8 @@
 
             <div class="card">
               <div class="section-title">
-                📋 <span data-key="todaySales">Ventes du jour</span>
+                <i class="fa-solid fa-clipboard-list"></i>
+                <span data-key="todaySales">Ventes du jour</span>
               </div>
               <div class="table-wrap">
                 <table>
@@ -294,20 +318,23 @@
                 "
               >
                 <div class="section-title" style="margin: 0">
-                  📦 <span data-key="stockTitle">Etat du stock</span>
+                  <i class="fa-solid fa-boxes-stacked"></i>
+                  <span data-key="stockTitle">Etat du stock</span>
                 </div>
                 <button
                   class="btn btn-warning btn-sm"
                   onclick="confirmResetStock()"
                 >
-                  🔄 <span data-key="resetStock">Remettre à zéro</span>
+                  <i class="fa-solid fa-rotate"></i>
+                  <span data-key="resetStock">Remettre à zéro</span>
                 </button>
               </div>
               <div id="stockListUI"></div>
             </div>
             <div class="card">
               <div class="section-title">
-                📊 <span data-key="stockChart">Visualisation du stock</span>
+                <i class="fa-solid fa-chart-bar"></i>
+                <span data-key="stockChart">Visualisation du stock</span>
               </div>
               <canvas id="chartStock" height="120"></canvas>
             </div>
@@ -318,13 +345,15 @@
             <div class="history-summary">
               <div class="card">
                 <div class="section-title">
-                  🥧 <span data-key="ventesParProduit">Ventes par produit</span>
+                  <i class="fa-solid fa-chart-pie"></i>
+                  <span data-key="ventesParProduit">Ventes par produit</span>
                 </div>
                 <canvas id="chartPie" height="200"></canvas>
               </div>
               <div class="card">
                 <div class="section-title">
-                  📅 <span data-key="resumeJour">Résumé du jour</span>
+                  <i class="fa-solid fa-calendar-day"></i>
+                  <span data-key="resumeJour">Résumé du jour</span>
                 </div>
                 <div
                   id="dailySummary"
@@ -343,13 +372,13 @@
                 "
               >
                 <div class="section-title" style="margin: 0">
-                  📋
+                  <i class="fa-solid fa-clipboard-list"></i>
                   <span data-key="allTransactions"
                     >Toutes les transactions</span
                   >
                 </div>
                 <button class="btn btn-outline btn-sm" onclick="exportCSV()">
-                  ⬇️ Export CSV
+                  <i class="fa-solid fa-download"></i> Export CSV
                 </button>
               </div>
               <div class="table-wrap">
@@ -375,7 +404,8 @@
           <section id="sec-products" class="hidden">
             <div class="card" style="margin-bottom: 20px">
               <div class="section-title">
-                ➕ <span>Ajouter un produit</span>
+                <i class="fa-solid fa-plus"></i>
+                <span>Ajouter un produit</span>
               </div>
               <div class="add-product-form">
                 <div class="form-row">
@@ -409,7 +439,7 @@
                   </div>
                   <div class="field" style="justify-content: flex-end">
                     <button class="btn btn-primary" onclick="addProduct()">
-                      ➕ Ajouter
+                      <i class="fa-solid fa-plus"></i> Ajouter
                     </button>
                   </div>
                 </div>
@@ -421,7 +451,9 @@
             </div>
 
             <div class="card">
-              <div class="section-title">🏷️ Catalogue des produits</div>
+              <div class="section-title">
+                <i class="fa-solid fa-tags"></i> Catalogue des produits
+              </div>
               <div class="table-wrap">
                 <table>
                   <thead>
@@ -444,7 +476,8 @@
             <div class="grid-2">
               <div class="card">
                 <div class="section-title">
-                  💬 <span data-key="supportTitle">Contact & Support</span>
+                  <i class="fa-solid fa-headset"></i>
+                  <span data-key="supportTitle">Contact & Support</span>
                 </div>
                 <p
                   style="
@@ -467,7 +500,9 @@
                       border-radius: 10px;
                     "
                   >
-                    <span style="font-size: 1.3rem">📧</span>
+                    <span style="font-size: 1.3rem; color: var(--accent)"
+                      ><i class="fa-solid fa-envelope"></i
+                    ></span>
                     <div>
                       <div style="font-weight: 600; font-size: 0.88rem">
                         Email
@@ -487,7 +522,9 @@
                       border-radius: 10px;
                     "
                   >
-                    <span style="font-size: 1.3rem">📱</span>
+                    <span style="font-size: 1.3rem; color: #25d366"
+                      ><i class="fa-brands fa-whatsapp"></i
+                    ></span>
                     <div>
                       <div style="font-weight: 600; font-size: 0.88rem">
                         WhatsApp
@@ -507,7 +544,9 @@
                       border-radius: 10px;
                     "
                   >
-                    <span style="font-size: 1.3rem">🕐</span>
+                    <span style="font-size: 1.3rem; color: var(--muted)"
+                      ><i class="fa-solid fa-clock"></i
+                    ></span>
                     <div>
                       <div
                         style="font-weight: 600; font-size: 0.88rem"
@@ -523,7 +562,9 @@
                 </div>
               </div>
               <div class="card">
-                <div class="section-title">📖 À propos de G-360</div>
+                <div class="section-title">
+                  <i class="fa-solid fa-circle-info"></i> À propos de G-360
+                </div>
                 <p
                   style="
                     font-size: 0.88rem;
@@ -549,7 +590,7 @@
     </div>
     <!-- /app -->
 
-    <!-- ═══════════ MODAL CONFIRM ═══════════ -->
+    <!--  MODAL CONFIRM  -->
     <div class="modal-overlay hidden" id="modalOverlay">
       <div class="modal-box">
         <div class="modal-title" id="modalTitle">Confirmation</div>
@@ -558,14 +599,12 @@
           style="font-size: 0.9rem; color: var(--muted); line-height: 1.6"
         ></div>
         <div class="modal-actions">
-          <button class="btn btn-outline" onclick="closeModal()">
-            Annuler
-          </button>
+          <button class="btn btn-outline">Annuler</button>
           <button class="btn btn-danger" id="modalConfirmBtn">Confirmer</button>
         </div>
       </div>
     </div>
 
-    <script src="./JAVASCRIPT/script.js"></script>
+    <script src="./JAVASCRIPT/script.js" defer></script>
   </body>
 </html>
