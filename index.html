@@ -253,6 +253,13 @@
                   />
                 </div>
                 <div class="field" style="justify-content: flex-end">
+                  <button
+                    class="btn btn-success"
+                    onclick="doSell()"
+                    data-key="validate"
+                  >
+                    <i class="fa-solid fa-circle-check"></i> Valider la vente
+                  </button>
                   <div
                     style="
                       background: #f0f4f8;
@@ -268,18 +275,10 @@
                     >
                   </div>
                 </div>
-                <div class="field" style="justify-content: flex-end">
-                  <button
-                    class="btn btn-success"
-                    onclick="doSell()"
-                    data-key="validate"
-                  >
-                    <i class="fa-solid fa-circle-check"></i> Valider la vente
-                  </button>
-                </div>
+                
               </div>
               <div
-                id="saleMsg"
+                id="sellMsg"
                 style="min-height: 22px; font-size: 0.85rem; font-weight: 600"
               ></div>
             </div>

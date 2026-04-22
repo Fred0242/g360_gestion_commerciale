@@ -226,6 +226,7 @@ function doLogout() {
 // INIT
 // ══════════════════════════════════════════
 function initApp() {
+  
   const currentUser = localStorage.getItem("currentUser");
 
   const savedData = localStorage.getItem(`data_${currentUser}`);
@@ -233,19 +234,19 @@ function initApp() {
     data = JSON.parse(savedData);
   } else {
     data = {
-      ca: 0,
-      salesCount: 0,
-      history: [],
-      chartCA: [],
-      products: {
-        pain:  { stock: 50,  prix: 200  },
-        sucre: { stock: 30,  prix: 500  },
-        oeuf:  { stock: 100, prix: 100  },
-        thon:  { stock: 20,  prix: 1500 },
-        cafe:  { stock: 40,  prix: 800  },
-      },
+      
+      products: [
+        { name: "pain", stock: 50, prix: 200 },
+        { name: "sucre", stock: 30, prix: 500 },
+        { name: "oeuf", stock: 100, prix: 100 },
+        { name: "thon", stock: 20, prix: 1500 },
+        { name: "cafe", stock: 40, prix: 800 },
+      ],
+      sales:[]
     };
   }
+  
+  loadProducts();
 
   // Garantit que les champs critiques existent toujours
   data.history    = data.history    ?? [];
@@ -277,6 +278,8 @@ function updateDate() {
   const now = new Date();
   el.textContent = now.toLocaleDateString("fr-FR");
 }
+
+
 
 // ══════════════════════════════════════════
 // NAVIGATION
@@ -315,12 +318,12 @@ function show(name, btn) {
 function renderSales() {
   const sel = document.getElementById("saleProduct");
   sel.innerHTML = "";
-  for (const p in data.products) {
+  data.products.forEach((p) => {
     const opt = document.createElement("option");
-    opt.value = p;
-    opt.text = `${p} (${data.products[p].stock} dispo)`;
+    opt.value = p.name;
+    opt.text = `${p.name} (${p.stock} dispo)`;
     sel.appendChild(opt);
-  }
+  });
   sel.onchange = updateSaleTotal;
   document.getElementById("saleQty").oninput = updateSaleTotal;
   updateSaleTotal();
@@ -345,24 +348,27 @@ function doSell() {
     msg.innerHTML = `${fa.warn} Quantité invalide`;
     return;
   }
-  if (!data.products[p]) {
+
+  const product = data.products.find(prod => prod.name === p);
+
+  if (!product) {
     msg.style.color = "var(--danger)";
     msg.innerHTML = `${fa.warn} Produit introuvable`;
     return;
   }
-  if (data.products[p].stock < q) {
+
+  if (product.stock < q) {
     msg.style.color = "var(--danger)";
-    msg.innerHTML =
-      lang === "wo"
-        ? `${fa.warn} Yëngu bi dafa tane!`
-        : `${fa.warn} Stock insuffisant ! (${data.products[p].stock} dispo)`;
+    msg.innerHTML = lang === "wo"
+      ? `${fa.warn} Yëngu bi dafa tane!`
+      : `${fa.warn} Stock insuffisant ! (${product.stock} dispo)`;
     return;
   }
 
-  const total = q * data.products[p].prix;
+  const total = q * product.prix;
   const now = new Date();
 
-  data.products[p].stock -= q;
+  product.stock -= q;
   data.ca += total;
   data.salesCount += 1;
   data.chartCA.push(data.ca);
@@ -385,8 +391,8 @@ function doSell() {
 
   showToast(`Vente : ${p} × ${q}`, `${total.toLocaleString()} FCFA encaissés`, "success");
 
-  if (data.products[p].stock <= STOCK_ALERT) {
-    showToast(`Stock faible : ${p}`, `Il reste ${data.products[p].stock} unités`, "warning");
+  if (product.stock <= STOCK_ALERT) {
+    showToast(`Stock faible : ${p}`, `Il reste ${product.stock} unités`, "warning");
     updateStockBadge();
   }
 
@@ -453,38 +459,36 @@ function deleteSale(id) {
 // STOCK
 // ══════════════════════════════════════════
 function renderStock() {
-  const container = document.getElementById("stockListUI");
-  const maxStock = Math.max(...Object.values(data.products).map((p) => p.stock), 1);
-  container.innerHTML = Object.entries(data.products)
-    .map(([name, p]) => {
-      const pct = Math.round((p.stock / Math.max(maxStock, 1)) * 100);
-      const cls = p.stock <= 10 ? "danger" : p.stock <= STOCK_ALERT ? "warning" : "ok";
-      return `
-    <div class="stock-item">
-      <div class="stock-item-info">
-        <div class="stock-item-name">${name}</div>
-        <div class="stock-item-prix">${p.prix.toLocaleString()} FCFA/unité</div>
-      </div>
-      <div class="stock-bar-wrap">
-        <div class="stock-bar-bg">
-          <div class="stock-bar-fill ${cls}" style="width:${pct}%"></div>
-        </div>
-      </div>
-      <div class="stock-qty" style="color:${cls === "danger" ? "var(--danger)" : cls === "warning" ? "var(--warning)" : "var(--success)"}">${p.stock}</div>
-      <div class="stock-actions">
-        <button class="btn btn-outline btn-sm" onclick="restock('${name}')" title="Réapprovisionner">
-          ${fa.plus}
-        </button>
-        <button class="btn btn-danger btn-sm" onclick="confirmDeleteProduct('${name}')" title="Supprimer">
-          ${fa.trash}
-        </button>
-      </div>
-    </div>`;
-    })
-    .join("");
+const container = document.getElementById("stockListUI");
 
-  drawStockChart();
-  updateStockBadge();
+const maxStock = Math.max(
+...data.products.map((p) => p.stock),
+1
+);
+
+container.innerHTML = data.products.map((p) => {
+const pct = Math.round((p.stock / maxStock) * 100);
+const cls =
+p.stock <= 10
+? "danger"
+: p.stock <= STOCK_ALERT
+? "warning"
+: "ok";
+
+return `
+<div class="stock-item">
+<div class="stock-item-info">
+<div class="stock-item-name">${p.name}</div>
+<div class="stock-item-prix">${p.prix.toLocaleString()} FCFA/unité</div>
+</div>
+<div class="stock-bar-wrap">
+<div class="stock-bar-bg">
+<div class="stock-bar-fill ${cls}" style="width:${pct}%"></div>
+</div>
+</div>
+</div>
+`;
+}).join("");
 }
 
 function restock(name) {
@@ -594,28 +598,45 @@ function renderHistory() {
 // PRODUITS
 // ══════════════════════════════════════════
 function renderProducts() {
-  const tbody = document.getElementById("productsTable");
-  tbody.innerHTML = Object.entries(data.products)
-    .map(([name, p]) => {
-      const cls =
-        p.stock <= 10 ? "badge-danger" : p.stock <= STOCK_ALERT ? "badge-warning" : "badge-success";
-      const label = p.stock <= 10 ? "Critique" : p.stock <= STOCK_ALERT ? "Faible" : "OK";
-      return `<tr>
-      <td><strong style="text-transform:capitalize">${name}</strong></td>
-      <td>${p.prix.toLocaleString()} FCFA</td>
-      <td>${p.stock}</td>
-      <td><span class="badge-pill ${cls}">${label}</span></td>
-      <td style="display:flex;gap:6px">
-        <button class="btn btn-outline btn-sm" onclick="restock('${name}')">
-          ${fa.plus} Réappro
-        </button>
-        <button class="btn btn-danger btn-sm" onclick="confirmDeleteProduct('${name}')">
-          ${fa.trash}
-        </button>
-      </td>
-    </tr>`;
-    })
-    .join("");
+const tbody = document.getElementById("productsTable");
+
+tbody.innerHTML = data.products.map((p) => {
+const cls =
+p.stock <= 10 ? "badge-danger"
+: p.stock <= STOCK_ALERT ? "badge-warning"
+: "badge-success";
+
+const label =
+p.stock <= 10 ? "Critique"
+: p.stock <= STOCK_ALERT ? "Faible"
+: "OK";
+
+return `
+<tr>
+<td><strong style="text-transform:capitalize">${p.name}</strong></td>
+<td>${p.prix.toLocaleString()} FCFA</td>
+<td>${p.stock}</td>
+<td><span class="badge-pill ${cls}">${label}</span></td>
+</tr>
+`;
+}).join("");
+}
+
+function loadProducts() {
+const select = document.getElementById("sellProduct");
+
+if (!select) return;
+
+select.innerHTML = "";
+
+data.products.forEach((p, index) => {
+const option = document.createElement("option");
+
+option.value = index;
+option.textContent = `${p.name} (${p.stock} dispo)`;
+
+select.appendChild(option);
+});
 }
 
 function addProduct() {
