@@ -336,6 +336,21 @@ body {
 .content {
   padding: 28px;
 }
+
+.filter-btns { 
+  display:flex;
+  gap:6px; 
+}
+.filter-btn { 
+  background:#f0f4f8;
+  color:var(--navy);
+  border:1px solid #dde3ea;
+  border-radius:6px;
+}
+.filter-btn.active { background:var(--accent);
+  color:#fff;
+  border-color:var(--accent); 
+}
  
 /* ═══════════════════════════════════════════
    CARDS & GRIDS
@@ -348,11 +363,10 @@ body {
   border: 1px solid var(--border);
 }
  
-.grid-4 {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
-  margin-bottom: 24px;
+.grid-4 { 
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:16px;
 }
  
 .grid-2 {

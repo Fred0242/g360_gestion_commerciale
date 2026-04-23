@@ -144,6 +144,7 @@
         <div class="content">
           <!-- ── DASHBOARD ── -->
           <section id="sec-dashboard">
+            <!-- Remplacez la div class="grid-4" entière par : -->
             <div class="grid-4">
               <div class="stat-card">
                 <div class="stat-icon blue">
@@ -187,6 +188,25 @@
                   <div class="stat-label" data-key="statAlertes">
                     Alertes stock faible
                   </div>
+                </div>
+              </div>
+              <!-- NOUVELLES CARTES JOUR -->
+              <div class="stat-card">
+                <div class="stat-icon blue">
+                  <i class="fa-solid fa-calendar-day"></i>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-val" id="statCAJour">0</div>
+                  <div class="stat-label">CA du jour (FCFA)</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon green">
+                  <i class="fa-solid fa-store"></i>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-val" id="statVentesJour">0</div>
+                  <div class="stat-label">Ventes du jour</div>
                 </div>
               </div>
             </div>
@@ -367,6 +387,8 @@
                   align-items: center;
                   justify-content: space-between;
                   margin-bottom: 16px;
+                  flex-wrap: wrap;
+                  gap: 10px;
                 "
               >
                 <div class="section-title" style="margin: 0">
@@ -375,9 +397,38 @@
                     >Toutes les transactions</span
                   >
                 </div>
-                <button class="btn btn-outline btn-sm" onclick="exportCSV()">
-                  <i class="fa-solid fa-download"></i> Export CSV
-                </button>
+                <div
+                  style="
+                    display: flex;
+                    gap: 8px;
+                    flex-wrap: wrap;
+                    align-items: center;
+                  "
+                >
+                  <div class="filter-btns">
+                    <button
+                      class="btn btn-sm filter-btn active"
+                      onclick="setHistoryFilter('all', this)"
+                    >
+                      Tout
+                    </button>
+                    <button
+                      class="btn btn-sm filter-btn"
+                      onclick="setHistoryFilter('today', this)"
+                    >
+                      Aujourd'hui
+                    </button>
+                    <button
+                      class="btn btn-sm filter-btn"
+                      onclick="setHistoryFilter('week', this)"
+                    >
+                      Cette semaine
+                    </button>
+                  </div>
+                  <button class="btn btn-outline btn-sm" onclick="exportCSV()">
+                    <i class="fa-solid fa-download"></i> Export CSV
+                  </button>
+                </div>
               </div>
               <div class="table-wrap">
                 <table>

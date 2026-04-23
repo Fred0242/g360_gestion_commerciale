@@ -1,3 +1,5 @@
+let historyFilter = "all"; // 'all' | 'today' | 'week'
+
 function showRegister() {
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("registerPage").classList.remove("hidden");
@@ -334,9 +336,10 @@ function renderSales() {
 function updateSaleTotal() {
   const name = document.getElementById("saleProduct").value;
   const q = Number(document.getElementById("saleQty").value) || 0;
-  const product = data.products.find(p => p.name === name);
+  const product = data.products.find((p) => p.name === name);
   const prix = product ? product.prix : 0;
-  document.getElementById("saleTotal").textContent = (prix * q).toLocaleString() + " FCFA";
+  document.getElementById("saleTotal").textContent =
+    (prix * q).toLocaleString() + " FCFA";
 }
 
 function doSell() {
@@ -380,8 +383,11 @@ function doSell() {
   // historique
   data.history.unshift({
     id: Date.now(),
-    date: new Date().toISOString("fr-FR"),
-    heure: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+    date: new Date().toLocaleDateString("fr-FR"),
+    heure: new Date().toLocaleTimeString("fr-FR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
     produit: p,
     qte: q,
     montant: total,
@@ -416,6 +422,7 @@ function doSell() {
 function renderTodaySales() {
   const today = new Date().toLocaleDateString("fr-FR");
   const tbody = document.getElementById("todaySalesTable");
+  // h.date est maintenant aussi en "dd/mm/yyyy" → la comparaison fonctionne
   const sales = data.history.filter(
     (h) => h.date === today && h.type === "vente",
   );
@@ -451,7 +458,7 @@ function deleteSale(id) {
       const idx = data.history.findIndex((h) => h.id === id);
       if (idx === -1) return;
       const h = data.history[idx];
-      const prod = data.products.find(p => p.name === h.produit);
+      const prod = data.products.find((p) => p.name === h.produit);
       if (prod) prod.stock += h.qte;
       data.ca -= h.montant;
       data.salesCount -= 1;
@@ -500,6 +507,7 @@ function renderStock() {
 `;
     })
     .join("");
+  drawStockChart();
 }
 
 function restock(name) {
@@ -518,19 +526,17 @@ function confirmResetStock() {
     "Tous les stocks seront mis à 0. Cette action est irréversible.",
     "fa-solid fa-rotate",
     () => {
-      data.products.forEach(p => (p.stock = 0));
+      data.products.forEach((p) => (p.stock = 0));
       save();
       renderStock();
       loadProducts();
       showToast("Stock réinitialisé", "Tous les produits sont à 0", "success");
-    }
+    },
   );
 }
 
-
-
 function updateStockBadge() {
-  const alerts = data.products.filter(p => p.stock <= STOCK_ALERT).length;
+  const alerts = data.products.filter((p) => p.stock <= STOCK_ALERT).length;
   const badge = document.getElementById("stockBadge");
   if (alerts > 0) {
     badge.textContent = alerts;
@@ -545,15 +551,39 @@ function updateStockBadge() {
 // ══════════════════════════════════════════
 function renderHistory() {
   const tbody = document.getElementById("historyTable");
-  if (!data.history.length) {
+
+  // --- Filtrage ---
+  const now = new Date();
+  const todayStr = now.toLocaleDateString("fr-FR");
+
+  // Début de semaine (lundi)
+  const dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1; // 0=lundi
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - dayOfWeek);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  let filtered = data.history;
+  if (historyFilter === "today") {
+    filtered = data.history.filter((h) => h.date === todayStr);
+  } else if (historyFilter === "week") {
+    filtered = data.history.filter((h) => {
+      // h.date est au format "dd/mm/yyyy"
+      const parts = h.date.split("/");
+      const d = new Date(parts[2], parts[1] - 1, parts[0]);
+      return d >= startOfWeek;
+    });
+  }
+
+  // --- Rendu tableau ---
+  if (!filtered.length) {
     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Aucune transaction</td></tr>`;
   } else {
-    tbody.innerHTML = data.history
+    tbody.innerHTML = filtered
       .map(
         (h, i) => `
       <tr>
-        <td style="color:var(--muted);font-size:0.8rem">${data.history.length - i}</td>
-        <td style="font-size:0.82rem">${new Date().toLocaleString("fr-FR")}</td>
+        <td style="color:var(--muted);font-size:0.8rem">${filtered.length - i}</td>
+        <td style="font-size:0.82rem">${h.date} ${h.heure || ""}</td>
         <td><strong style="text-transform:capitalize">${h.produit}</strong></td>
         <td>${h.qte}</td>
         <td><strong>${h.montant.toLocaleString()} FCFA</strong></td>
@@ -566,7 +596,8 @@ function renderHistory() {
       .join("");
   }
 
-  const today = new Date().toLocaleDateString("fr-FR");
+  // --- Résumé du jour (inchangé) ---
+  const today = now.toLocaleDateString("fr-FR");
   const todaySales = data.history.filter((h) => h.date === today);
   const todayCA = todaySales.reduce((a, h) => a + h.montant, 0);
 
@@ -641,15 +672,26 @@ function loadProducts() {
 }
 
 function addProduct() {
-  const name = document.getElementById("newProdName").value.trim().toLowerCase();
+  const name = document
+    .getElementById("newProdName")
+    .value.trim()
+    .toLowerCase();
   const prix = parseInt(document.getElementById("newProdPrix").value);
   const stock = parseInt(document.getElementById("newProdStock").value) || 0;
   const msg = document.getElementById("prodMsg");
 
-  if (!name) { msg.style.color = "var(--danger)"; msg.innerHTML = `${fa.warn} Nom requis`; return; }
-  if (!prix || prix <= 0) { msg.style.color = "var(--danger)"; msg.innerHTML = `${fa.warn} Prix invalide`; return; }
+  if (!name) {
+    msg.style.color = "var(--danger)";
+    msg.innerHTML = `${fa.warn} Nom requis`;
+    return;
+  }
+  if (!prix || prix <= 0) {
+    msg.style.color = "var(--danger)";
+    msg.innerHTML = `${fa.warn} Prix invalide`;
+    return;
+  }
 
-  const existing = data.products.find(p => p.name === name);
+  const existing = data.products.find((p) => p.name === name);
 
   if (existing) {
     if (existing.stock > 0) {
@@ -720,10 +762,23 @@ function renderDashboard() {
       )
       .join("");
   }
-
+  const today = new Date().toLocaleDateString("fr-FR");
+  const todaySales = data.history.filter((h) => h.date === today);
+  const todayCA = todaySales.reduce((a, h) => a + h.montant, 0);
+  document.getElementById("statCAJour").textContent = todayCA.toLocaleString();
+  document.getElementById("statVentesJour").textContent = todaySales.length;
   drawCAChart();
   drawTopChart();
   updateStockBadge();
+}
+
+function setHistoryFilter(filter, btn) {
+  historyFilter = filter;
+  document
+    .querySelectorAll(".filter-btn")
+    .forEach((b) => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  renderHistory();
 }
 
 // ══════════════════════════════════════════
@@ -816,9 +871,7 @@ function drawStockChart() {
         {
           label: "Stock",
           data: data.products.map((p) => p.stock),
-          backgroundColor: data.products.map((p) =>
-            p.stock <= 10 ? "#e63946" : p.stock <= STOCK_ALERT ? "#f4a261" : "#2dc653",
-          ),
+          backgroundColor: colors,
           borderRadius: 6,
         },
       ],
