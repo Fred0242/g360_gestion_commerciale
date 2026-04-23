@@ -146,11 +146,11 @@ let data = {
   history: [],
   chartCA: [],
   products: {
-    pain:  { stock: 50,  prix: 200  },
-    sucre: { stock: 30,  prix: 500  },
-    oeuf:  { stock: 100, prix: 100  },
-    thon:  { stock: 20,  prix: 1500 },
-    cafe:  { stock: 40,  prix: 800  },
+    pain: { stock: 50, prix: 200 },
+    sucre: { stock: 30, prix: 500 },
+    oeuf: { stock: 100, prix: 100 },
+    thon: { stock: 20, prix: 1500 },
+    cafe: { stock: 40, prix: 800 },
   },
 };
 
@@ -186,7 +186,9 @@ function save() {
 // changement de langue
 function setLang(l, btn) {
   lang = l;
-  document.querySelectorAll(".lang-btn").forEach((b) => b.classList.remove("active"));
+  document
+    .querySelectorAll(".lang-btn")
+    .forEach((b) => b.classList.remove("active"));
   if (btn) btn.classList.add("active");
   document.querySelectorAll("[data-key]").forEach((el) => {
     const k = el.dataset.key;
@@ -204,7 +206,7 @@ function doLogin() {
   const users = JSON.parse(localStorage.getItem("users"));
 
   const foundUser = users.find(
-    (user) => user.username === u && user.password === p
+    (user) => user.username === u && user.password === p,
   );
 
   if (foundUser) {
@@ -226,7 +228,6 @@ function doLogout() {
 // INIT
 // ══════════════════════════════════════════
 function initApp() {
-  
   const currentUser = localStorage.getItem("currentUser");
 
   const savedData = localStorage.getItem(`data_${currentUser}`);
@@ -234,7 +235,6 @@ function initApp() {
     data = JSON.parse(savedData);
   } else {
     data = {
-      
       products: [
         { name: "pain", stock: 50, prix: 200 },
         { name: "sucre", stock: 30, prix: 500 },
@@ -242,18 +242,18 @@ function initApp() {
         { name: "thon", stock: 20, prix: 1500 },
         { name: "cafe", stock: 40, prix: 800 },
       ],
-      sales:[]
+      sales: [],
     };
   }
-  
+
   loadProducts();
 
   // Garantit que les champs critiques existent toujours
-  data.history    = data.history    ?? [];
-  data.chartCA    = data.chartCA    ?? [];
+  data.history = data.history ?? [];
+  data.chartCA = data.chartCA ?? [];
   data.salesCount = data.salesCount ?? 0;
-  data.ca         = data.ca         ?? 0;
-  data.products   = data.products   ?? {};
+  data.ca = data.ca ?? 0;
+  data.products = data.products ?? {};
 
   updateDate();
   setInterval(updateDate, 60000);
@@ -279,8 +279,6 @@ function updateDate() {
   el.textContent = now.toLocaleDateString("fr-FR");
 }
 
-
-
 // ══════════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════════
@@ -298,18 +296,21 @@ function show(name, btn) {
     .querySelectorAll(".main .content > section")
     .forEach((s) => s.classList.add("hidden"));
   document.getElementById("sec-" + name).classList.remove("hidden");
-  document.querySelectorAll(".nav-item").forEach((b) => b.classList.remove("active"));
+  document
+    .querySelectorAll(".nav-item")
+    .forEach((b) => b.classList.remove("active"));
   if (btn) {
     btn.classList.add("active");
     activeNavBtn = btn;
   }
-  document.getElementById("pageTitle").textContent = sectionTitles[name] || name;
+  document.getElementById("pageTitle").textContent =
+    sectionTitles[name] || name;
   currentSection = name;
   if (name === "dashboard") renderDashboard();
-  if (name === "sales")     renderSales();
-  if (name === "stock")     renderStock();
-  if (name === "history")   renderHistory();
-  if (name === "products")  renderProducts();
+  if (name === "sales") renderSales();
+  if (name === "stock") renderStock();
+  if (name === "history") renderHistory();
+  if (name === "products") renderProducts();
 }
 
 // ══════════════════════════════════════════
@@ -331,11 +332,11 @@ function renderSales() {
 }
 
 function updateSaleTotal() {
-  const p = document.getElementById("saleProduct").value;
+  const name = document.getElementById("saleProduct").value;
   const q = Number(document.getElementById("saleQty").value) || 0;
-  const prix = data.products[p] ? data.products[p].prix : 0;
-  document.getElementById("saleTotal").textContent =
-    (prix * q).toLocaleString() + " FCFA";
+  const product = data.products.find(p => p.name === name);
+  const prix = product ? product.prix : 0;
+  document.getElementById("saleTotal").textContent = (prix * q).toLocaleString() + " FCFA";
 }
 
 function doSell() {
@@ -349,7 +350,7 @@ function doSell() {
     return;
   }
 
-  const product = data.products.find(prod => prod.name === p);
+  const product = data.products.find((prod) => prod.name === p);
 
   if (!product) {
     msg.style.color = "var(--danger)";
@@ -359,24 +360,28 @@ function doSell() {
 
   if (product.stock < q) {
     msg.style.color = "var(--danger)";
-    msg.innerHTML = lang === "wo"
-      ? `${fa.warn} Yëngu bi dafa tane!`
-      : `${fa.warn} Stock insuffisant ! (${product.stock} dispo)`;
+    msg.innerHTML =
+      lang === "wo"
+        ? `${fa.warn} Yëngu bi dafa tane!`
+        : `${fa.warn} Stock insuffisant ! (${product.stock} dispo)`;
     return;
   }
+  const total = product.prix * q;
 
-  const total = q * product.prix;
-  const now = new Date();
-
+  // mise à jour stock
   product.stock -= q;
-  data.ca += total;
-  data.salesCount += 1;
+
+  // mise à jour stats
+  data.ca = (data.ca || 0) + total;
+  data.salesCount = (data.salesCount || 0) + 1;
+  data.chartCA = data.chartCA || [];
   data.chartCA.push(data.ca);
 
+  // historique
   data.history.unshift({
     id: Date.now(),
-    date: now.toLocaleDateString("fr-FR"),
-    heure: now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+    date: new Date().toISOString("fr-FR"),
+    heure: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
     produit: p,
     qte: q,
     montant: total,
@@ -389,10 +394,18 @@ function doSell() {
   msg.innerHTML = `${fa.check} Vente enregistrée : ${p} × ${q} = ${total.toLocaleString()} FCFA`;
   setTimeout(() => (msg.innerHTML = ""), 4000);
 
-  showToast(`Vente : ${p} × ${q}`, `${total.toLocaleString()} FCFA encaissés`, "success");
+  showToast(
+    `Vente : ${p} × ${q}`,
+    `${total.toLocaleString()} FCFA encaissés`,
+    "success",
+  );
 
   if (product.stock <= STOCK_ALERT) {
-    showToast(`Stock faible : ${p}`, `Il reste ${product.stock} unités`, "warning");
+    showToast(
+      `Stock faible : ${p}`,
+      `Il reste ${product.stock} unités`,
+      "warning",
+    );
     updateStockBadge();
   }
 
@@ -403,7 +416,9 @@ function doSell() {
 function renderTodaySales() {
   const today = new Date().toLocaleDateString("fr-FR");
   const tbody = document.getElementById("todaySalesTable");
-  const sales = data.history.filter((h) => h.date === today && h.type === "vente");
+  const sales = data.history.filter(
+    (h) => h.date === today && h.type === "vente",
+  );
 
   if (!sales.length) {
     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">Aucune vente aujourd'hui</td></tr>`;
@@ -422,7 +437,7 @@ function renderTodaySales() {
           ${fa.trash} Supprimer
         </button>
       </td>
-    </tr>`
+    </tr>`,
     )
     .join("");
 }
@@ -436,7 +451,8 @@ function deleteSale(id) {
       const idx = data.history.findIndex((h) => h.id === id);
       if (idx === -1) return;
       const h = data.history[idx];
-      if (data.products[h.produit]) data.products[h.produit].stock += h.qte;
+      const prod = data.products.find(p => p.name === h.produit);
+      if (prod) prod.stock += h.qte;
       data.ca -= h.montant;
       data.salesCount -= 1;
       data.history.splice(idx, 1);
@@ -451,7 +467,7 @@ function deleteSale(id) {
       renderSales();
       renderDashboard();
       updateStockBadge();
-    }
+    },
   );
 }
 
@@ -459,23 +475,17 @@ function deleteSale(id) {
 // STOCK
 // ══════════════════════════════════════════
 function renderStock() {
-const container = document.getElementById("stockListUI");
+  const container = document.getElementById("stockListUI");
 
-const maxStock = Math.max(
-...data.products.map((p) => p.stock),
-1
-);
+  const maxStock = Math.max(...data.products.map((p) => p.stock), 1);
 
-container.innerHTML = data.products.map((p) => {
-const pct = Math.round((p.stock / maxStock) * 100);
-const cls =
-p.stock <= 10
-? "danger"
-: p.stock <= STOCK_ALERT
-? "warning"
-: "ok";
+  container.innerHTML = data.products
+    .map((p) => {
+      const pct = Math.round((p.stock / maxStock) * 100);
+      const cls =
+        p.stock <= 10 ? "danger" : p.stock <= STOCK_ALERT ? "warning" : "ok";
 
-return `
+      return `
 <div class="stock-item">
 <div class="stock-item-info">
 <div class="stock-item-name">${p.name}</div>
@@ -488,7 +498,8 @@ return `
 </div>
 </div>
 `;
-}).join("");
+    })
+    .join("");
 }
 
 function restock(name) {
@@ -504,34 +515,22 @@ function restock(name) {
 function confirmResetStock() {
   openModal(
     "Remettre le stock à zéro ?",
-    "Tous les stocks de tous les produits seront mis à 0. Cette action est irréversible.",
+    "Tous les stocks seront mis à 0. Cette action est irréversible.",
     "fa-solid fa-rotate",
     () => {
-      for (const p in data.products) data.products[p].stock = 0;
+      data.products.forEach(p => (p.stock = 0));
       save();
       renderStock();
-      showToast("Stock remis à zéro", "Tous les produits sont à 0", "warning");
+      loadProducts();
+      showToast("Stock réinitialisé", "Tous les produits sont à 0", "success");
     }
   );
 }
 
-function confirmDeleteProduct(name) {
-  openModal(
-    `Supprimer "${name}" ?`,
-    "Ce produit sera retiré du catalogue. Les ventes passées seront conservées dans l'historique.",
-    "fa-solid fa-trash",
-    () => {
-      delete data.products[name];
-      save();
-      renderStock();
-      renderProducts();
-      showToast("Produit supprimé", name + " a été retiré du catalogue", "danger");
-    }
-  );
-}
+
 
 function updateStockBadge() {
-  const alerts = Object.values(data.products).filter((p) => p.stock <= STOCK_ALERT).length;
+  const alerts = data.products.filter(p => p.stock <= STOCK_ALERT).length;
   const badge = document.getElementById("stockBadge");
   if (alerts > 0) {
     badge.textContent = alerts;
@@ -554,7 +553,7 @@ function renderHistory() {
         (h, i) => `
       <tr>
         <td style="color:var(--muted);font-size:0.8rem">${data.history.length - i}</td>
-        <td style="font-size:0.82rem">${h.date} ${h.heure || ""}</td>
+        <td style="font-size:0.82rem">${new Date().toLocaleString("fr-FR")}</td>
         <td><strong style="text-transform:capitalize">${h.produit}</strong></td>
         <td>${h.qte}</td>
         <td><strong>${h.montant.toLocaleString()} FCFA</strong></td>
@@ -562,7 +561,7 @@ function renderHistory() {
         <td>
           <button class="btn btn-danger btn-sm" onclick="deleteSale(${h.id})">${fa.trash}</button>
         </td>
-      </tr>`
+      </tr>`,
       )
       .join("");
   }
@@ -598,20 +597,21 @@ function renderHistory() {
 // PRODUITS
 // ══════════════════════════════════════════
 function renderProducts() {
-const tbody = document.getElementById("productsTable");
+  const tbody = document.getElementById("productsTable");
 
-tbody.innerHTML = data.products.map((p) => {
-const cls =
-p.stock <= 10 ? "badge-danger"
-: p.stock <= STOCK_ALERT ? "badge-warning"
-: "badge-success";
+  tbody.innerHTML = data.products
+    .map((p) => {
+      const cls =
+        p.stock <= 10
+          ? "badge-danger"
+          : p.stock <= STOCK_ALERT
+            ? "badge-warning"
+            : "badge-success";
 
-const label =
-p.stock <= 10 ? "Critique"
-: p.stock <= STOCK_ALERT ? "Faible"
-: "OK";
+      const label =
+        p.stock <= 10 ? "Critique" : p.stock <= STOCK_ALERT ? "Faible" : "OK";
 
-return `
+      return `
 <tr>
 <td><strong style="text-transform:capitalize">${p.name}</strong></td>
 <td>${p.prix.toLocaleString()} FCFA</td>
@@ -619,24 +619,25 @@ return `
 <td><span class="badge-pill ${cls}">${label}</span></td>
 </tr>
 `;
-}).join("");
+    })
+    .join("");
 }
 
 function loadProducts() {
-const select = document.getElementById("sellProduct");
+  const select = document.getElementById("sellProduct");
 
-if (!select) return;
+  if (!select) return;
 
-select.innerHTML = "";
+  select.innerHTML = "";
 
-data.products.forEach((p, index) => {
-const option = document.createElement("option");
+  data.products.forEach((p, index) => {
+    const option = document.createElement("option");
 
-option.value = index;
-option.textContent = `${p.name} (${p.stock} dispo)`;
+    option.value = index;
+    option.textContent = `${p.name} (${p.stock} dispo)`;
 
-select.appendChild(option);
-});
+    select.appendChild(option);
+  });
 }
 
 function addProduct() {
@@ -645,23 +646,34 @@ function addProduct() {
   const stock = parseInt(document.getElementById("newProdStock").value) || 0;
   const msg = document.getElementById("prodMsg");
 
-  if (!name) {
-    msg.style.color = "var(--danger)";
-    msg.innerHTML = `${fa.warn} Nom requis`;
-    return;
-  }
-  if (!prix || prix <= 0) {
-    msg.style.color = "var(--danger)";
-    msg.innerHTML = `${fa.warn} Prix invalide`;
-    return;
-  }
-  if (data.products[name]) {
-    msg.style.color = "var(--danger)";
-    msg.innerHTML = `${fa.warn} Ce produit existe déjà`;
+  if (!name) { msg.style.color = "var(--danger)"; msg.innerHTML = `${fa.warn} Nom requis`; return; }
+  if (!prix || prix <= 0) { msg.style.color = "var(--danger)"; msg.innerHTML = `${fa.warn} Prix invalide`; return; }
+
+  const existing = data.products.find(p => p.name === name);
+
+  if (existing) {
+    if (existing.stock > 0) {
+      // Produit encore en stock → vraie erreur
+      msg.style.color = "var(--danger)";
+      msg.innerHTML = `${fa.warn} Ce produit existe déjà (stock actuel : ${existing.stock})`;
+      return;
+    }
+    // Produit épuisé → on réapprovisionne
+    existing.stock = stock;
+    existing.prix = prix; // met aussi le prix à jour si besoin
+    save();
+    msg.style.color = "var(--success)";
+    msg.innerHTML = `${fa.check} Stock de "${name}" remis à ${stock} unité(s) !`;
+    setTimeout(() => (msg.innerHTML = ""), 3000);
+    renderProducts();
+    renderStock();
+    loadProducts();
+    showToast("Réapprovisionnement", `${name} : +${stock} unités`, "success");
     return;
   }
 
-  data.products[name] = { stock, prix };
+  // Nouveau produit
+  data.products.push({ name, stock, prix });
   save();
   msg.style.color = "var(--success)";
   msg.innerHTML = `${fa.check} Produit "${name}" ajouté !`;
@@ -670,6 +682,8 @@ function addProduct() {
   document.getElementById("newProdStock").value = "";
   setTimeout(() => (msg.innerHTML = ""), 3000);
   renderProducts();
+  renderStock();
+  loadProducts();
   showToast("Produit ajouté", name + " est dans le catalogue", "success");
 }
 
@@ -677,13 +691,15 @@ function addProduct() {
 // DASHBOARD
 // ══════════════════════════════════════════
 function renderDashboard() {
-  document.getElementById("statCA").textContent = (data.ca || 0).toLocaleString();
+  document.getElementById("statCA").textContent = (
+    data.ca || 0
+  ).toLocaleString();
   document.getElementById("statVentes").textContent = data.salesCount || 0;
 
-  const totalStock = Object.values(data.products).reduce((a, p) => a + p.stock, 0);
+  const totalStock = data.products.reduce((a, p) => a + p.stock, 0);
   document.getElementById("statProduits").textContent = totalStock;
 
-  const alerts = Object.values(data.products).filter((p) => p.stock <= STOCK_ALERT).length;
+  const alerts = data.products.filter((p) => p.stock <= STOCK_ALERT).length;
   document.getElementById("statAlertes").textContent = alerts;
 
   const tbody = document.getElementById("lastSalesTable");
@@ -700,7 +716,7 @@ function renderDashboard() {
         <td>${h.qte}</td>
         <td><strong>${h.montant.toLocaleString()} FCFA</strong></td>
         <td><span class="badge-pill badge-success">${fa.check} Vente</span></td>
-      </tr>`
+      </tr>`,
       )
       .join("");
   }
@@ -756,7 +772,9 @@ function drawTopChart() {
   (data.history || []).forEach((h) => {
     counts[h.produit] = (counts[h.produit] || 0) + h.qte;
   });
-  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const sorted = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
   chartTop = new Chart(ctx, {
     type: "bar",
     data: {
@@ -765,7 +783,13 @@ function drawTopChart() {
         {
           label: "Unités vendues",
           data: sorted.map(([, v]) => v),
-          backgroundColor: ["#00b4d8", "#0077b6", "#415a77", "#2dc653", "#f4a261"],
+          backgroundColor: [
+            "#00b4d8",
+            "#0077b6",
+            "#415a77",
+            "#2dc653",
+            "#f4a261",
+          ],
           borderRadius: 6,
         },
       ],
@@ -781,18 +805,20 @@ function drawTopChart() {
 function drawStockChart() {
   const ctx = document.getElementById("chartStock");
   if (chartStock) chartStock.destroy();
-  const colors = Object.values(data.products).map((p) =>
-    p.stock <= 10 ? "#e63946" : p.stock <= STOCK_ALERT ? "#f4a261" : "#2dc653"
+  const colors = data.products.map((p) =>
+    p.stock <= 10 ? "#e63946" : p.stock <= STOCK_ALERT ? "#f4a261" : "#2dc653",
   );
   chartStock = new Chart(ctx, {
     type: "bar",
     data: {
-      labels: Object.keys(data.products),
+      labels: data.products.map((p) => p.name),
       datasets: [
         {
           label: "Stock",
-          data: Object.values(data.products).map((p) => p.stock),
-          backgroundColor: colors,
+          data: data.products.map((p) => p.stock),
+          backgroundColor: data.products.map((p) =>
+            p.stock <= 10 ? "#e63946" : p.stock <= STOCK_ALERT ? "#f4a261" : "#2dc653",
+          ),
           borderRadius: 6,
         },
       ],
@@ -824,7 +850,14 @@ function drawPieChart() {
       datasets: [
         {
           data: Object.values(counts),
-          backgroundColor: ["#00b4d8", "#0077b6", "#415a77", "#2dc653", "#f4a261", "#e63946"],
+          backgroundColor: [
+            "#00b4d8",
+            "#0077b6",
+            "#415a77",
+            "#2dc653",
+            "#f4a261",
+            "#e63946",
+          ],
           borderWidth: 2,
           borderColor: "#fff",
         },
@@ -909,9 +942,19 @@ function exportCSV() {
     showToast("Export impossible", "Aucune donnée à exporter", "warning");
     return;
   }
-  const rows = [["#", "Date", "Heure", "Produit", "Quantite", "Montant FCFA", "Type"]];
+  const rows = [
+    ["#", "Date", "Heure", "Produit", "Quantite", "Montant FCFA", "Type"],
+  ];
   data.history.forEach((h, i) => {
-    rows.push([i + 1, h.date, h.heure || "", h.produit, h.qte, h.montant, h.type || "vente"]);
+    rows.push([
+      i + 1,
+      h.date,
+      h.heure || "",
+      h.produit,
+      h.qte,
+      h.montant,
+      h.type || "vente",
+    ]);
   });
   const csv = rows.map((r) => r.join(";")).join("\n");
   const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
