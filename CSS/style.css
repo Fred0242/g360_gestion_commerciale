@@ -351,6 +351,20 @@ body {
   color:#fff;
   border-color:var(--accent); 
 }
+
+.filter-btns { display:flex; gap:6px; flex-wrap:wrap; }
+.filter-btn {
+  background: #f0f4f8;
+  color: var(--navy);
+  border: 1px solid #dde3ea;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-btn:hover { background: #e2e8f0; }
+.filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
  
 /* ═══════════════════════════════════════════
    CARDS & GRIDS

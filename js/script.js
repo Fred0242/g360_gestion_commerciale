@@ -1,4 +1,7 @@
-let historyFilter = "all"; // 'all' | 'today' | 'week'
+let historyFilter = 'all';
+let salesFilter = 'today';
+let historyCustomDate = null;
+let salesCustomDate = null;
 
 function showRegister() {
   document.getElementById("loginPage").classList.add("hidden");
@@ -420,33 +423,52 @@ function doSell() {
 }
 
 function renderTodaySales() {
-  const today = new Date().toLocaleDateString("fr-FR");
+  const sales = filterHistory(salesFilter, salesCustomDate)
+    .filter(h => h.type === "vente");
   const tbody = document.getElementById("todaySalesTable");
-  // h.date est maintenant aussi en "dd/mm/yyyy" → la comparaison fonctionne
-  const sales = data.history.filter(
-    (h) => h.date === today && h.type === "vente",
-  );
 
   if (!sales.length) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">Aucune vente aujourd'hui</td></tr>`;
-    return;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">Aucune vente sur cette période</td></tr>`;
+  } else {
+    tbody.innerHTML = sales.map(h => `
+      <tr>
+        <td>${h.date} ${h.heure || ''}</td>
+        <td><strong style="text-transform:capitalize">${h.produit}</strong></td>
+        <td>${h.qte}</td>
+        <td><strong>${h.montant.toLocaleString()} FCFA</strong></td>
+        <td>
+          <button class="btn btn-danger btn-sm" onclick="deleteSale(${h.id})">
+            ${fa.trash} Supprimer
+          </button>
+        </td>
+      </tr>`).join("");
   }
-  tbody.innerHTML = sales
-    .map(
-      (h) => `
-    <tr>
-      <td>${h.date} ${h.heure}</td>
-      <td><strong style="text-transform:capitalize">${h.produit}</strong></td>
-      <td>${h.qte}</td>
-      <td><strong>${h.montant.toLocaleString()} FCFA</strong></td>
-      <td>
-        <button class="btn btn-danger btn-sm" onclick="deleteSale(${h.id})">
-          ${fa.trash} Supprimer
-        </button>
-      </td>
-    </tr>`,
-    )
-    .join("");
+
+  // Résumé sous le tableau
+  const totalCA = sales.reduce((a, h) => a + h.montant, 0);
+  document.getElementById("salesFilterSummary").innerHTML = sales.length
+    ? `<span>${fa.receipt} <strong>${sales.length}</strong> vente(s)</span>
+       <span>${fa.sack} Total : <strong style="color:var(--success)">${totalCA.toLocaleString()} FCFA</strong></span>`
+    : '';
+}
+
+function setSalesFilter(filter, btn) {
+  salesFilter = filter;
+  salesCustomDate = null;
+  document.querySelectorAll('#sec-sales .filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const input = document.getElementById('salesCustomDate');
+  input.style.display = filter === 'custom' ? 'inline-block' : 'none';
+  if (filter !== 'custom') renderTodaySales();
+}
+
+function applySalesCustomDate() {
+  const val = document.getElementById('salesCustomDate').value; // "yyyy-mm-dd"
+  if (!val) return;
+  // Convertir en "dd/mm/yyyy"
+  const [y, m, d] = val.split('-');
+  salesCustomDate = `${d}/${m}/${y}`;
+  renderTodaySales();
 }
 
 function deleteSale(id) {
@@ -551,39 +573,15 @@ function updateStockBadge() {
 // ══════════════════════════════════════════
 function renderHistory() {
   const tbody = document.getElementById("historyTable");
+  const filtered = filterHistory(historyFilter, historyCustomDate);
 
-  // --- Filtrage ---
-  const now = new Date();
-  const todayStr = now.toLocaleDateString("fr-FR");
-
-  // Début de semaine (lundi)
-  const dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1; // 0=lundi
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - dayOfWeek);
-  startOfWeek.setHours(0, 0, 0, 0);
-
-  let filtered = data.history;
-  if (historyFilter === "today") {
-    filtered = data.history.filter((h) => h.date === todayStr);
-  } else if (historyFilter === "week") {
-    filtered = data.history.filter((h) => {
-      // h.date est au format "dd/mm/yyyy"
-      const parts = h.date.split("/");
-      const d = new Date(parts[2], parts[1] - 1, parts[0]);
-      return d >= startOfWeek;
-    });
-  }
-
-  // --- Rendu tableau ---
   if (!filtered.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Aucune transaction</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Aucune transaction sur cette période</td></tr>`;
   } else {
-    tbody.innerHTML = filtered
-      .map(
-        (h, i) => `
+    tbody.innerHTML = filtered.map((h, i) => `
       <tr>
         <td style="color:var(--muted);font-size:0.8rem">${filtered.length - i}</td>
-        <td style="font-size:0.82rem">${h.date} ${h.heure || ""}</td>
+        <td style="font-size:0.82rem">${h.date} ${h.heure || ''}</td>
         <td><strong style="text-transform:capitalize">${h.produit}</strong></td>
         <td>${h.qte}</td>
         <td><strong>${h.montant.toLocaleString()} FCFA</strong></td>
@@ -591,14 +589,12 @@ function renderHistory() {
         <td>
           <button class="btn btn-danger btn-sm" onclick="deleteSale(${h.id})">${fa.trash}</button>
         </td>
-      </tr>`,
-      )
-      .join("");
+      </tr>`).join("");
   }
 
-  // --- Résumé du jour (inchangé) ---
-  const today = now.toLocaleDateString("fr-FR");
-  const todaySales = data.history.filter((h) => h.date === today);
+  // Résumé du jour (toujours basé sur aujourd'hui, indépendant du filtre)
+  const today = new Date().toLocaleDateString("fr-FR");
+  const todaySales = data.history.filter(h => h.date === today);
   const todayCA = todaySales.reduce((a, h) => a + h.montant, 0);
 
   document.getElementById("dailySummary").innerHTML = `
@@ -727,6 +723,47 @@ function addProduct() {
   renderStock();
   loadProducts();
   showToast("Produit ajouté", name + " est dans le catalogue", "success");
+}
+
+function parseDate(str) {
+  // str au format "dd/mm/yyyy"
+  const parts = str.split('/');
+  if (parts.length !== 3) return null;
+  return new Date(parts[2], parts[1] - 1, parts[0]);
+}
+
+function filterHistory(filter, customDate) {
+  const now = new Date();
+  const todayStr = now.toLocaleDateString("fr-FR");
+
+  // Début de semaine (lundi)
+  const dow = now.getDay() === 0 ? 6 : now.getDay() - 1;
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - dow);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  // Début de mois
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  if (filter === 'today') {
+    return data.history.filter(h => h.date === todayStr);
+  }
+  if (filter === 'week') {
+    return data.history.filter(h => {
+      const d = parseDate(h.date);
+      return d && d >= startOfWeek;
+    });
+  }
+  if (filter === 'month') {
+    return data.history.filter(h => {
+      const d = parseDate(h.date);
+      return d && d >= startOfMonth;
+    });
+  }
+  if (filter === 'custom' && customDate) {
+    return data.history.filter(h => h.date === customDate);
+  }
+  return data.history; // 'all'
 }
 
 // ══════════════════════════════════════════
@@ -931,6 +968,24 @@ function drawPieChart() {
       },
     },
   });
+}
+
+function setHistoryFilter(filter, btn) {
+  historyFilter = filter;
+  historyCustomDate = null;
+  document.querySelectorAll('#sec-history .filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const input = document.getElementById('historyCustomDate');
+  input.style.display = filter === 'custom' ? 'inline-block' : 'none';
+  if (filter !== 'custom') renderHistory();
+}
+
+function applyHistoryCustomDate() {
+  const val = document.getElementById('historyCustomDate').value; // "yyyy-mm-dd"
+  if (!val) return;
+  const [y, m, d] = val.split('-');
+  historyCustomDate = `${d}/${m}/${y}`;
+  renderHistory();
 }
 
 // ══════════════════════════════════════════
