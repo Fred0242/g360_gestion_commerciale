@@ -144,7 +144,6 @@
         <div class="content">
           <!-- ── DASHBOARD ── -->
           <section id="sec-dashboard">
-            <!-- Remplacez la div class="grid-4" entière par : -->
             <div class="grid-4">
               <div class="stat-card">
                 <div class="stat-icon blue">
@@ -152,9 +151,7 @@
                 </div>
                 <div class="stat-info">
                   <div class="stat-val" id="statCA">0</div>
-                  <div class="stat-label" data-key="statCA">
-                    Chiffre d'affaires (FCFA)
-                  </div>
+                  <div class="stat-label">CA total (FCFA)</div>
                 </div>
               </div>
               <div class="stat-card">
@@ -163,9 +160,7 @@
                 </div>
                 <div class="stat-info">
                   <div class="stat-val" id="statVentes">0</div>
-                  <div class="stat-label" data-key="statVentes">
-                    Ventes totales
-                  </div>
+                  <div class="stat-label">Ventes totales</div>
                 </div>
               </div>
               <div class="stat-card">
@@ -174,9 +169,7 @@
                 </div>
                 <div class="stat-info">
                   <div class="stat-val" id="statProduits">0</div>
-                  <div class="stat-label" data-key="statProduits">
-                    Produits en stock
-                  </div>
+                  <div class="stat-label">Unités en stock</div>
                 </div>
               </div>
               <div class="stat-card">
@@ -185,46 +178,94 @@
                 </div>
                 <div class="stat-info">
                   <div class="stat-val" id="statAlertes">0</div>
-                  <div class="stat-label" data-key="statAlertes">
-                    Alertes stock faible
-                  </div>
+                  <div class="stat-label">Alertes stock faible</div>
                 </div>
               </div>
-              <!-- NOUVELLES CARTES JOUR -->
-              <div class="stat-card">
-                <div class="stat-icon blue">
+              <div class="stat-card today-card">
+                <div class="stat-icon white">
                   <i class="fa-solid fa-calendar-day"></i>
                 </div>
                 <div class="stat-info">
                   <div class="stat-val" id="statCAJour">0</div>
-                  <div class="stat-label">CA du jour (FCFA)</div>
+                  <div class="stat-label">CA aujourd'hui (FCFA)</div>
                 </div>
               </div>
-              <div class="stat-card">
-                <div class="stat-icon green">
+              <div class="stat-card today-card">
+                <div class="stat-icon white">
                   <i class="fa-solid fa-store"></i>
                 </div>
                 <div class="stat-info">
                   <div class="stat-val" id="statVentesJour">0</div>
-                  <div class="stat-label">Ventes du jour</div>
+                  <div class="stat-label">Ventes aujourd'hui</div>
                 </div>
               </div>
             </div>
-
             <div class="grid-2">
+              
               <div class="card">
-                <div class="section-title">
-                  <i class="fa-solid fa-chart-line"></i>
-                  <span data-key="caEvolution">Evolution du CA</span>
+                <div class="chart-header">
+                  <div class="section-title">
+                    <i class="fa-solid fa-chart-line"></i
+                    ><span>Évolution du CA</span>
+                  </div>
+                  <div class="filter-btns">
+                    <button
+                      class="btn btn-sm filter-btn active"
+                      onclick="setCAFilter('all', this)"
+                    >
+                      Tout
+                    </button>
+                    <button
+                      class="btn btn-sm filter-btn"
+                      onclick="setCAFilter('week', this)"
+                    >
+                      7 jours
+                    </button>
+                    <button
+                      class="btn btn-sm filter-btn"
+                      onclick="setCAFilter('month', this)"
+                    >
+                      30 jours
+                    </button>
+                  </div>
                 </div>
-                <canvas id="chartCA" height="140"></canvas>
+                <canvas id="chartCA" height="160"></canvas>
               </div>
+
+              <!-- Top produits -->
               <div class="card">
-                <div class="section-title">
-                  <i class="fa-solid fa-trophy"></i>
-                  <span data-key="topProduits">Top produits vendus</span>
+                <div class="chart-header">
+                  <div class="section-title">
+                    <i class="fa-solid fa-trophy"></i><span>Top produits</span>
+                  </div>
+                  <div class="filter-btns">
+                    <button
+                      class="btn btn-sm filter-btn active"
+                      onclick="setTopFilter('all', this)"
+                    >
+                      Tout
+                    </button>
+                    <button
+                      class="btn btn-sm filter-btn"
+                      onclick="setTopFilter('today', this)"
+                    >
+                      Auj.
+                    </button>
+                    <button
+                      class="btn btn-sm filter-btn"
+                      onclick="setTopFilter('week', this)"
+                    >
+                      7j
+                    </button>
+                    <button
+                      class="btn btn-sm filter-btn"
+                      onclick="setTopFilter('month', this)"
+                    >
+                      30j
+                    </button>
+                  </div>
                 </div>
-                <canvas id="chartTop" height="140"></canvas>
+                <div id="topProductsList"></div>
               </div>
             </div>
 

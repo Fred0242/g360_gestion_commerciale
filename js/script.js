@@ -2,6 +2,8 @@ let historyFilter = 'all';
 let salesFilter = 'today';
 let historyCustomDate = null;
 let salesCustomDate = null;
+let caFilter = 'all';
+let topFilter = 'all';
 
 function showRegister() {
   document.getElementById("loginPage").classList.add("hidden");
@@ -598,26 +600,10 @@ function renderHistory() {
   const todayCA = todaySales.reduce((a, h) => a + h.montant, 0);
 
   document.getElementById("dailySummary").innerHTML = `
-    <div style="display:grid;gap:8px">
-      <div style="display:flex;justify-content:space-between;padding:10px 14px;background:#f8fafc;border-radius:8px">
-        <span style="color:var(--muted);display:flex;align-items:center;gap:6px">${fa.calendar} Date</span>
-        <strong>${today}</strong>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding:10px 14px;background:#f8fafc;border-radius:8px">
-        <span style="color:var(--muted);display:flex;align-items:center;gap:6px">${fa.receipt} Ventes du jour</span>
-        <strong>${todaySales.length}</strong>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding:10px 14px;background:#e6f9ee;border-radius:8px">
-        <span style="color:var(--muted);display:flex;align-items:center;gap:6px">${fa.sack} CA du jour</span>
-        <strong style="color:var(--success)">${todayCA.toLocaleString()} FCFA</strong>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding:10px 14px;background:#f8fafc;border-radius:8px">
-        <span style="color:var(--muted);display:flex;align-items:center;gap:6px">${fa.sack} CA total</span>
-        <strong>${(data.ca || 0).toLocaleString()} FCFA</strong>
-      </div>
-    </div>`;
-
-  drawPieChart();
+  <div class="summary-row"><span class="summary-row-label">${fa.calendar} Date</span><span class="summary-row-val">${today}</span></div>
+  <div class="summary-row"><span class="summary-row-label">${fa.receipt} Ventes du jour</span><span class="summary-row-val">${todaySales.length}</span></div>
+  <div class="summary-row highlight"><span class="summary-row-label">${fa.sack} CA du jour</span><span class="summary-row-val">${todayCA.toLocaleString()} FCFA</span></div>
+  <div class="summary-row"><span class="summary-row-label">${fa.sack} CA total</span><span class="summary-row-val">${(data.ca||0).toLocaleString()} FCFA</span></div>`;
 }
 
 // ══════════════════════════════════════════
@@ -625,29 +611,22 @@ function renderHistory() {
 // ══════════════════════════════════════════
 function renderProducts() {
   const tbody = document.getElementById("productsTable");
-
-  tbody.innerHTML = data.products
-    .map((p) => {
-      const cls =
-        p.stock <= 10
-          ? "badge-danger"
-          : p.stock <= STOCK_ALERT
-            ? "badge-warning"
-            : "badge-success";
-
-      const label =
-        p.stock <= 10 ? "Critique" : p.stock <= STOCK_ALERT ? "Faible" : "OK";
-
-      return `
-<tr>
-<td><strong style="text-transform:capitalize">${p.name}</strong></td>
-<td>${p.prix.toLocaleString()} FCFA</td>
-<td>${p.stock}</td>
-<td><span class="badge-pill ${cls}">${label}</span></td>
-</tr>
-`;
-    })
-    .join("");
+  tbody.innerHTML = data.products.map(p => {
+    const cls = p.stock <= 10 ? "badge-danger" : p.stock <= STOCK_ALERT ? "badge-warning" : "badge-success";
+    const label = p.stock <= 10 ? "Critique" : p.stock <= STOCK_ALERT ? "Faible" : "OK";
+    return `
+      <tr>
+        <td><strong style="text-transform:capitalize">${p.name}</strong></td>
+        <td style="font-family:'DM Mono',monospace">${p.prix.toLocaleString()} FCFA</td>
+        <td style="font-family:'DM Mono',monospace;font-weight:700">${p.stock}</td>
+        <td><span class="badge-pill ${cls}">${label}</span></td>
+        <td>
+          <button class="btn btn-danger btn-sm" onclick="confirmDeleteProduct('${p.name}')">
+            <i class="fa-solid fa-ban"></i> Retirer
+          </button>
+        </td>
+      </tr>`;
+  }).join("");
 }
 
 function loadProducts() {
@@ -805,7 +784,7 @@ function renderDashboard() {
   document.getElementById("statCAJour").textContent = todayCA.toLocaleString();
   document.getElementById("statVentesJour").textContent = todaySales.length;
   drawCAChart();
-  drawTopChart();
+  renderTopProducts();
   updateStockBadge();
 }
 
@@ -826,72 +805,114 @@ let chartCA, chartTop, chartStock, chartPie;
 function drawCAChart() {
   const ctx = document.getElementById("chartCA");
   if (chartCA) chartCA.destroy();
+
+  // Grouper les ventes par date
+  const now = new Date();
+  let history = [...data.history];
+
+  if (caFilter === 'week') {
+    const limit = new Date(now); limit.setDate(now.getDate() - 6); limit.setHours(0,0,0,0);
+    history = history.filter(h => { const d = parseDate(h.date); return d && d >= limit; });
+  } else if (caFilter === 'month') {
+    const limit = new Date(now); limit.setDate(now.getDate() - 29); limit.setHours(0,0,0,0);
+    history = history.filter(h => { const d = parseDate(h.date); return d && d >= limit; });
+  }
+
+  // Regrouper par date → CA journalier
+  const byDate = {};
+  [...history].reverse().forEach(h => {
+    byDate[h.date] = (byDate[h.date] || 0) + h.montant;
+  });
+
+  const labels = Object.keys(byDate);
+  const values = Object.values(byDate);
+
   chartCA = new Chart(ctx, {
     type: "line",
     data: {
-      labels: (data.chartCA || []).map((_, i) => `V${i + 1}`),
-      datasets: [
-        {
-          label: "CA cumulé (FCFA)",
-          data: data.chartCA || [],
-          borderColor: "#00b4d8",
-          backgroundColor: "rgba(0,180,216,0.08)",
-          borderWidth: 2.5,
-          tension: 0.4,
-          fill: true,
-          pointRadius: 4,
-          pointBackgroundColor: "#00b4d8",
-        },
-      ],
+      labels,
+      datasets: [{
+        label: "CA (FCFA)",
+        data: values,
+        borderColor: "#3b82f6",
+        backgroundColor: "rgba(59,130,246,0.07)",
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 4,
+        pointBackgroundColor: "#3b82f6",
+        pointBorderColor: "white",
+        pointBorderWidth: 2,
+      }],
     },
     options: {
       responsive: true,
       plugins: { legend: { display: false } },
       scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { callback: (v) => v.toLocaleString() },
-        },
+        y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString() }, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false } }
       },
     },
   });
 }
 
-function drawTopChart() {
-  const ctx = document.getElementById("chartTop");
-  if (chartTop) chartTop.destroy();
+function setCAFilter(filter, btn) {
+  caFilter = filter;
+  document.querySelectorAll('#sec-dashboard .chart-header:first-of-type .filter-btn')
+    .forEach(b => b.classList.remove('active'));
+  // Cibler uniquement les boutons du graphique CA
+  btn.closest('.filter-btns').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  drawCAChart();
+}
+
+function drawTopChart() {}
+
+function renderTopProducts() {
+  let history = [...data.history];
+  const now = new Date();
+
+  if (topFilter === 'today') {
+    const today = now.toLocaleDateString("fr-FR");
+    history = history.filter(h => h.date === today);
+  } else if (topFilter === 'week') {
+    const limit = new Date(now); limit.setDate(now.getDate() - 6); limit.setHours(0,0,0,0);
+    history = history.filter(h => { const d = parseDate(h.date); return d && d >= limit; });
+  } else if (topFilter === 'month') {
+    const limit = new Date(now); limit.setDate(now.getDate() - 29); limit.setHours(0,0,0,0);
+    history = history.filter(h => { const d = parseDate(h.date); return d && d >= limit; });
+  }
+
   const counts = {};
-  (data.history || []).forEach((h) => {
-    counts[h.produit] = (counts[h.produit] || 0) + h.qte;
-  });
-  const sorted = Object.entries(counts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
-  chartTop = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: sorted.map(([n]) => n),
-      datasets: [
-        {
-          label: "Unités vendues",
-          data: sorted.map(([, v]) => v),
-          backgroundColor: [
-            "#00b4d8",
-            "#0077b6",
-            "#415a77",
-            "#2dc653",
-            "#f4a261",
-          ],
-          borderRadius: 6,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true } },
-    },
-  });
+  history.forEach(h => { counts[h.produit] = (counts[h.produit] || 0) + h.qte; });
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const max = sorted[0]?.[1] || 1;
+  const ranks = ['gold', 'silver', 'bronze'];
+
+  const container = document.getElementById("topProductsList");
+  if (!sorted.length) {
+    container.innerHTML = `<p style="text-align:center;color:var(--muted);padding:32px 0;font-size:0.85rem">Aucune vente sur cette période</p>`;
+    return;
+  }
+
+  container.innerHTML = sorted.map(([name, qty], i) => `
+    <div class="top-product-row">
+      <div class="top-rank ${ranks[i] || ''}">${i + 1}</div>
+      <div class="top-product-name">${name}</div>
+      <div class="top-product-bar-wrap">
+        <div class="top-product-bar">
+          <div class="top-product-bar-fill" style="width:${Math.round(qty/max*100)}%"></div>
+        </div>
+      </div>
+      <div class="top-product-qty">${qty} u.</div>
+    </div>`).join("");
+}
+
+function setTopFilter(filter, btn) {
+  topFilter = filter;
+  btn.closest('.filter-btns').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTopProducts();
 }
 
 function drawStockChart() {
