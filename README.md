@@ -25,7 +25,7 @@ A simple and efficient web application to manage products, sales, stock, and bus
 
 ## Preview
 
-![App Screenshot](./assets/screenshot.png)
+![App Screenshot](./assets/Dashboard.png)
 
 ## Purpose
 

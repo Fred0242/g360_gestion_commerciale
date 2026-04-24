@@ -25,7 +25,7 @@ Un'applicazione web semplice per gestire prodotti, vendite, stock e statistiche.
 
 ## Anteprima
 
-![Screenshot](./assets)
+![Screenshot](./assets/Dashboard.png)
 
 ## Obiettivo
 

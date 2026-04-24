@@ -25,7 +25,7 @@ Une application web simple permettant de gérer les produits, les ventes, le sto
 
 ## Aperçu
 
-![Capture](./assets)
+![Capture](./assets/Dashboard.png)
 
 ## Objectif
 
