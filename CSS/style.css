@@ -186,6 +186,21 @@ body {
   width: 320px;
 }
 #registerMsg { color: #86efac; font-size: 0.85rem; }
+#changePassPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 50%, #0e7490 100%);
+}
+
+#changePassPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 50%, #0e7490 100%);
+}
 
 /* APP LAYOUT */
 #app { display: flex; min-height: 100vh; }

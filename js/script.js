@@ -1,3 +1,19 @@
+
+if (!localStorage.getItem("users")) {
+  const defaultUsers = [{ username: "admin", password: "1234", role: "admin", mustChangePassword: false }];
+  localStorage.setItem("users", JSON.stringify(defaultUsers));
+}
+
+// Migration : ajoute role/mustChangePassword aux anciens users
+(function migrateUsers() {
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  let changed = false;
+  users.forEach(u => {
+    if (!u.role) { u.role = u.username === "admin" ? "admin" : "vendeur"; changed = true; }
+    if (u.mustChangePassword === undefined) { u.mustChangePassword = false; changed = true; }
+  });
+  if (changed) localStorage.setItem("users", JSON.stringify(users));
+})();
 let historyFilter = 'all';
 let salesFilter = 'today';
 let historyCustomDate = null;
@@ -43,11 +59,6 @@ function doRegister() {
   showLogin();
 }
 
-// Initialisation des utilisateurs
-if (!localStorage.getItem("users")) {
-  const defaultUsers = [{ username: "admin", password: "1234" }];
-  localStorage.setItem("users", JSON.stringify(defaultUsers));
-}
 
 // Initialisation des identifiants (si pas encore définis)
 if (!localStorage.getItem("user")) {
@@ -209,15 +220,19 @@ function setLang(l, btn) {
 function doLogin() {
   const u = document.getElementById("loginUser").value;
   const p = document.getElementById("loginPass").value;
-
   const users = JSON.parse(localStorage.getItem("users"));
-
-  const foundUser = users.find(
-    (user) => user.username === u && user.password === p,
-  );
+  const foundUser = users.find(user => user.username === u && user.password === p);
 
   if (foundUser) {
     localStorage.setItem("currentUser", u);
+    localStorage.setItem("currentRole", foundUser.role || "vendeur");
+
+    if (foundUser.mustChangePassword) {
+      document.getElementById("loginPage").classList.add("hidden");
+      document.getElementById("changePassPage").classList.remove("hidden");
+      return;
+    }
+
     document.getElementById("loginPage").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
     initApp();
@@ -225,6 +240,34 @@ function doLogin() {
     document.getElementById("loginErr").textContent =
       lang === "wo" ? "Diggël dafa faw!" : "Identifiants incorrects";
   }
+}
+
+function doChangePassword() {
+  const newPass = document.getElementById("newPass").value;
+  const confirmPass = document.getElementById("confirmNewPass").value;
+  const msg = document.getElementById("changePassMsg");
+
+  if (!newPass || newPass.length < 6) {
+    msg.style.color = "var(--danger)";
+    msg.textContent = "Mot de passe trop court (minimum 6 caractères)";
+    return;
+  }
+  if (newPass !== confirmPass) {
+    msg.style.color = "var(--danger)";
+    msg.textContent = "Les mots de passe ne correspondent pas";
+    return;
+  }
+
+  const currentUser = localStorage.getItem("currentUser");
+  const users = JSON.parse(localStorage.getItem("users"));
+  const user = users.find(u => u.username === currentUser);
+  user.password = newPass;
+  user.mustChangePassword = false;
+  localStorage.setItem("users", JSON.stringify(users));
+
+  document.getElementById("changePassPage").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  initApp();
 }
 
 function doLogout() {
@@ -236,6 +279,13 @@ function doLogout() {
 // ══════════════════════════════════════════
 function initApp() {
   const currentUser = localStorage.getItem("currentUser");
+  const currentRole = localStorage.getItem("currentRole");
+
+  // Affiche l'onglet Utilisateurs uniquement pour l'admin
+  const usersNavItem = document.getElementById("navUsers");
+  if (usersNavItem) {
+    usersNavItem.style.display = currentRole === "admin" ? "flex" : "none";
+  }
 
   const savedData = localStorage.getItem(`data_${currentUser}`);
   if (savedData) {
@@ -279,6 +329,88 @@ function initApp() {
   if (btnWO) btnWO.addEventListener("click", () => setLang("wo", btnWO));
 }
 
+function renderUsers() {
+  const currentRole = localStorage.getItem("currentRole");
+  if (currentRole !== "admin") return;
+
+  const users = JSON.parse(localStorage.getItem("users"));
+  const tbody = document.getElementById("usersTable");
+
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td><strong>${u.username}</strong></td>
+      <td>
+        <span class="badge-pill ${u.role === 'admin' ? 'badge-warning' : 'badge-success'}">
+          ${u.role === 'admin' ? 'Admin' : 'Vendeur'}
+        </span>
+      </td>
+      <td>
+        <span class="badge-pill ${u.mustChangePassword ? 'badge-warning' : 'badge-success'}">
+          ${u.mustChangePassword ? '⏳ Première connexion' : '✓ Actif'}
+        </span>
+      </td>
+      <td>
+        ${u.username !== 'admin' ? `
+          <button class="btn btn-danger btn-sm" onclick="confirmDeleteUser('${u.username}')">
+            <i class="fa-solid fa-ban"></i> Retirer
+          </button>
+        ` : '<span style="color:var(--muted);font-size:0.8rem">—</span>'}
+      </td>
+    </tr>
+  `).join("");
+}
+
+function addUser() {
+  const username = document.getElementById("newUserName").value.trim().toLowerCase();
+  const password = document.getElementById("newUserPass").value;
+  const role = document.getElementById("newUserRole").value;
+  const msg = document.getElementById("userMsg");
+
+  if (!username) {
+    msg.style.color = "var(--danger)";
+    msg.innerHTML = `${fa.warn} Nom d'utilisateur requis`;
+    return;
+  }
+  if (!password || password.length < 4) {
+    msg.style.color = "var(--danger)";
+    msg.innerHTML = `${fa.warn} Mot de passe trop court (min. 4 caractères)`;
+    return;
+  }
+
+  const users = JSON.parse(localStorage.getItem("users"));
+  if (users.find(u => u.username === username)) {
+    msg.style.color = "var(--danger)";
+    msg.innerHTML = `${fa.warn} Cet utilisateur existe déjà`;
+    return;
+  }
+
+  users.push({ username, password, role, mustChangePassword: true });
+  localStorage.setItem("users", JSON.stringify(users));
+
+  msg.style.color = "var(--success)";
+  msg.innerHTML = `${fa.check} Compte "${username}" créé — mot de passe temporaire : <strong>${password}</strong>`;
+
+  document.getElementById("newUserName").value = "";
+  document.getElementById("newUserPass").value = "";
+  renderUsers();
+  showToast("Utilisateur créé", `${username} peut maintenant se connecter`, "success");
+}
+
+function confirmDeleteUser(username) {
+  openModal(
+    `Retirer ${username} ?`,
+    "Cet utilisateur ne pourra plus se connecter. Ses données de vente sont conservées.",
+    "fa-solid fa-ban",
+    () => {
+      const users = JSON.parse(localStorage.getItem("users"));
+      const filtered = users.filter(u => u.username !== username);
+      localStorage.setItem("users", JSON.stringify(filtered));
+      renderUsers();
+      showToast("Utilisateur retiré", username + " n'a plus accès", "success");
+    }
+  );
+}
+
 function updateDate() {
   const el = document.getElementById("topDate");
   if (!el) return;
@@ -295,6 +427,7 @@ const sectionTitles = {
   stock: "Stock",
   history: "Historique",
   products: "Produits",
+  users: "Utilisateurs",
   support: "Support",
 };
 
@@ -318,6 +451,7 @@ function show(name, btn) {
   if (name === "stock") renderStock();
   if (name === "history") renderHistory();
   if (name === "products") renderProducts();
+  if (name === "users") renderUsers();
 }
 
 // ══════════════════════════════════════════
